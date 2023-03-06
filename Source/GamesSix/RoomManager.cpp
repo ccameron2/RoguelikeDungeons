@@ -75,19 +75,33 @@ void ARoomManager::SpawnNewRooms(ARoom* node, int level, FastNoise* noise)
 		default:
 			break;
 		}
-		node->UsedDirections.Push(direction);
-		transform.SetLocation(location);
-		ARoom* room = GetWorld()->SpawnActor<ARoom>(RoomClass, transform);
-		node->Connections.Push(room);
-		Rooms.Push(room);
-		room->GenerateMesh(noise);
 
-		auto nodeDirection = Direction::North;
-		if (direction == Direction::North) nodeDirection = Direction::South;
-		if (direction == Direction::East) nodeDirection = Direction::West;
-		if (direction == Direction::South) nodeDirection = Direction::North;
-		if (direction == Direction::West) nodeDirection = Direction::East;
-		room->UsedDirections.Push(nodeDirection);
+		FHitResult Hit;
+		FVector Start = location + FVector{0,0,float(node->Scale * node->WallSizeZ)};
+		FVector End = location - FVector{ 0,0,float(node->Scale * node->WallSizeZ)};
+		ECollisionChannel Channel = ECC_Visibility;
+		FCollisionQueryParams Params;
+		//ActorLineTraceSingle(Hit, Start, End, Channel, Params);
+		GetWorld()->LineTraceSingleByChannel(Hit, Start, End, Channel, Params);
+		DrawDebugLine(GetWorld(), Start, End, Hit.bBlockingHit ? FColor::Red : FColor::Blue, true, 5.0f, 0, 10.0f);
+		auto hitActor = Cast<ARoom>(Hit.GetActor());
+		if (!hitActor)
+		{
+			node->UsedDirections.Push(direction);
+
+			transform.SetLocation(location);
+			ARoom* room = GetWorld()->SpawnActor<ARoom>(RoomClass, transform);
+			node->Connections.Push(room);
+			Rooms.Push(room);
+			room->GenerateMesh(noise);
+
+			auto nodeDirection = Direction::North;
+			if (direction == Direction::North) nodeDirection = Direction::South;
+			if (direction == Direction::East) nodeDirection = Direction::West;
+			if (direction == Direction::South) nodeDirection = Direction::North;
+			if (direction == Direction::West) nodeDirection = Direction::East;
+			room->UsedDirections.Push(nodeDirection);
+		}		
 	}
 
 	if (level < MaxRecursionLevel)
@@ -102,6 +116,7 @@ void ARoomManager::SpawnNewRooms(ARoom* node, int level, FastNoise* noise)
 
 void ARoomManager::MakeNewLevel()
 {
+	UKismetSystemLibrary::FlushPersistentDebugLines(GetWorld());
 	if (Rooms.Num() > 0)
 	{
 		for (auto& room : Rooms)
@@ -120,7 +135,7 @@ void ARoomManager::MakeNewLevel()
 	transform.SetLocation(location);
 	ARoom* root = GetWorld()->SpawnActor<ARoom>(RoomClass, transform);
 	root->GenerateMesh(&noise);
-
+	Rooms.Push(root);
 	SpawnNewRooms(root,0,&noise);
 	DrawDebugConnections();
 	MakeWalls(&noise);
@@ -222,16 +237,21 @@ void ARoomManager::MakeWalls(FastNoise* noise)
 
 					if (vertex.Z == 0)
 					{
-						vertex.Z += result1 * 25;
-						vertex.Z += result2 * 10;
+						vertex.Z += result1 * 15;
+						vertex.Z += result2 * 5;
+					}
+					else if (vertex.Z == WallHeight)
+					{
+						vertex.Z += result1 * 15;
+						vertex.Z += result2 * 5;
 					}
 					else
 					{
-						vertex.X += result1 * 25;
-						vertex.X += result2 * 10;
+						vertex.X += result1 * 15;
+						vertex.X += result2 * 5;
 						
-						vertex.Y += result1 * 25;
-						vertex.Y += result2 * 10;
+						vertex.Y += result1 * 15;
+						vertex.Y += result2 * 5;
 					}
 				}
 
@@ -241,7 +261,7 @@ void ARoomManager::MakeWalls(FastNoise* noise)
 				WallMesh->CreateMeshSection(index, vertices, triangles, normals, UVs, VertexColours, Tangents, true);
 				WallMesh->SetMaterial(index, Material);
 				index++;
-
+				
 			}
 		}							
 	}
@@ -249,8 +269,6 @@ void ARoomManager::MakeWalls(FastNoise* noise)
 
 void ARoomManager::DrawDebugConnections()
 {
-	UKismetSystemLibrary::FlushPersistentDebugLines(GetWorld());
-
 	// iterate over each room and add its connections to the arrays
 	for (auto& room : Rooms)
 	{	

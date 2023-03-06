@@ -42,7 +42,7 @@ public:
 		int WallSizeZ = 20;
 
 	UPROPERTY(EditAnywhere, Category = "Geometry")
-		int Scale = 75;
+		int Scale = 50;
 	
 	UPROPERTY(VisibleAnywhere)
 		int ID = 0;
@@ -66,7 +66,7 @@ public:
 	void CalculateNormals(TArray<FVector>& normals, TArray<FVector> vertices, TArray<int32> triangles);
 private:
 	void CreateFloor(FastNoise* noise);
-
+	void CreateTop(FastNoise* noise);
 
 	bool MeshGenerated = false;
 
@@ -76,6 +76,10 @@ private:
 	TArray<FVector2D> UVs;
 	TArray<FColor> VertexColours;
 	TArray<FProcMeshTangent> Tangents;
+
+	TArray<FVector> TopVertices;
+	TArray<int32> TopTriangles;
+	TArray<FVector> TopNormals;
 
 	TArray<FVector> WallVertices;
 	TArray<int32> WallTriangles;

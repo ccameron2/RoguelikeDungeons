@@ -8,7 +8,7 @@ ARoom::ARoom()
 	PrimaryActorTick.bCanEverTick = true;
 
 	ProcMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Room Mesh"));
-	ProcMesh->SetupAttachment(RootComponent);
+	SetRootComponent(ProcMesh);
 
 	ConstructorHelpers::FObjectFinder<UMaterialInstance> forestMaterial(TEXT("M_Material'/Game/Materials/M_Material.M_Material'"));
 	Material = forestMaterial.Object;
@@ -37,8 +37,8 @@ void ARoom::GenerateMesh(FastNoise* noise)
 	VertexColours.Empty();
 	Tangents.Empty();
 	ProcMesh->ClearMeshSection(0);
-
 	CreateFloor(noise);
+	CreateTop(noise);
 }
 
 void ARoom::CreateFloor(FastNoise* noise)
@@ -74,9 +74,9 @@ void ARoom::CreateFloor(FastNoise* noise)
 		// Get input vector from vertex list and sample noise at different levels
 		auto input = Vertices[i] + GetActorLocation();
 		auto result1 = noise->GetNoise(input.X / 0.9, input.Y / 0.9, input.Z / 0.9);
-		Vertices[i].Z += result1 * 25;
+		Vertices[i].Z += result1 * 15;
 		auto result2 = noise->GetNoise(input.X / 0.5, input.Y / 0.5, input.Z / 0.5);
-		Vertices[i].Z += result2 * 10;
+		Vertices[i].Z += result2 * 5;
 	}
 
 	Normals.Init({ 0,0,0 }, Vertices.Num());
@@ -87,6 +87,55 @@ void ARoom::CreateFloor(FastNoise* noise)
 	// Create mesh section
 	ProcMesh->CreateMeshSection(0, Vertices, Triangles, Normals, UVs, VertexColours, Tangents, true);
 	ProcMesh->SetMaterial(0, Material);
+}
+
+void ARoom::CreateTop(FastNoise* noise)
+{
+	TopVertices.Init({ 0,0,0 }, SizeX * SizeY);
+
+	// Create a grid of vertices
+	int indexX = 0;
+	for (int i = 0; i < SizeX; i++)
+	{
+		int indexY = 0;
+		for (int j = 0; j < SizeY; j++)
+		{
+			FVector newVector = FVector{ float(i * Scale), float(j * Scale),0 };
+			TopVertices[SizeX * indexX + indexY] = newVector;
+			indexY++;
+		}
+		indexX++;
+	}
+
+	// Generate triangles for grid of vertices
+	UKismetProceduralMeshLibrary::CreateGridMeshTriangles(SizeX, SizeY, true, TopTriangles);
+
+	for (auto& vertex : TopVertices)
+	{
+		vertex.X -= (SizeX * Scale) / 2;
+		vertex.Y -= (SizeY * Scale) / 2;
+		vertex.Z += ((WallSizeZ * Scale) / 2)-Scale;
+	}
+
+	// For each vertex, get 2 different noise values and apply them to vertex hight at different scales.
+	for (int i = 0; i < TopVertices.Num(); i++)
+	{
+		// Get input vector from vertex list and sample noise at different levels
+		auto input = TopVertices[i] + GetActorLocation();
+		auto result1 = noise->GetNoise(input.X / 0.9, input.Y / 0.9, input.Z / 0.9);
+		TopVertices[i].Z += result1 * 15;
+		auto result2 = noise->GetNoise(input.X / 0.5, input.Y / 0.5, input.Z / 0.5);
+		TopVertices[i].Z += result2 * 5;
+	}
+
+	TopNormals.Init({ 0,0,0 }, TopVertices.Num());
+
+	// Faster normals
+	CalculateNormals(TopNormals, TopVertices, TopTriangles);
+
+	// Create mesh section
+	ProcMesh->CreateMeshSection(1, TopVertices, TopTriangles, TopNormals, UVs, VertexColours, Tangents, true);
+	ProcMesh->SetMaterial(1, Material);
 }
 
 void ARoom::GenerateTriangles(int sizeX, int sizeY, TArray<int32>& triangles)
