@@ -25,7 +25,6 @@ void ARoom::BeginPlay()
 void ARoom::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void ARoom::GenerateMesh(FastNoise* noise)
@@ -74,9 +73,9 @@ void ARoom::CreateFloor(FastNoise* noise)
 		// Get input vector from vertex list and sample noise at different levels
 		auto input = Vertices[i] + GetActorLocation();
 		auto result1 = noise->GetNoise(input.X / 0.9, input.Y / 0.9, input.Z / 0.9);
-		Vertices[i].Z += result1 * 15;
+		Vertices[i].Z += result1 * 8;
 		auto result2 = noise->GetNoise(input.X / 0.5, input.Y / 0.5, input.Z / 0.5);
-		Vertices[i].Z += result2 * 5;
+		Vertices[i].Z += result2 * 2;
 	}
 
 	Normals.Init({ 0,0,0 }, Vertices.Num());
@@ -123,9 +122,9 @@ void ARoom::CreateTop(FastNoise* noise)
 		// Get input vector from vertex list and sample noise at different levels
 		auto input = TopVertices[i] + GetActorLocation();
 		auto result1 = noise->GetNoise(input.X / 0.9, input.Y / 0.9, input.Z / 0.9);
-		TopVertices[i].Z += result1 * 15;
+		TopVertices[i].Z += result1 * 8;
 		auto result2 = noise->GetNoise(input.X / 0.5, input.Y / 0.5, input.Z / 0.5);
-		TopVertices[i].Z += result2 * 5;
+		TopVertices[i].Z += result2 * 2;
 	}
 
 	TopNormals.Init({ 0,0,0 }, TopVertices.Num());
@@ -168,6 +167,121 @@ void ARoom::GenerateRandomMesh()
 	noise.SetNoiseType(FastNoise::SimplexFractal);
 	noise.SetSeed(FMath::Rand());
 	GenerateMesh(&noise);
+}
+
+void ARoom::MakeWalls(FastNoise* noise)
+{
+	int index = 2;
+	for (int i = 0; i < 4; i++)
+	{
+		auto direction = static_cast<Direction>(i);
+		if (!UsedDirections.Contains(direction))
+		{
+
+			FVector location = GetActorLocation();
+			TArray<FVector> vertices;
+			TArray<FVector> normals;
+			TArray<int32> triangles;
+
+			switch (direction)
+			{
+			case Direction::North:
+				for (int j = 0; j < SizeX; j++)
+				{
+					for (int k = 0; k < WallHeight; k++)
+					{
+						vertices.Push(FVector{ float(j * Scale),0,float(k * Scale) });
+					}
+				}
+				for (auto& vertex : vertices)
+				{
+					vertex.X -= (SizeX * Scale) / 2;
+					vertex.Y += (SizeY * Scale / 2) - Scale;
+				}
+				UKismetProceduralMeshLibrary::CreateGridMeshTriangles(SizeX, WallHeight, false, triangles);
+				break;
+			case Direction::South:
+				for (int j = 0; j < SizeX; j++)
+				{
+					for (int k = 0; k < WallHeight; k++)
+					{
+						vertices.Push(FVector{ float(j * Scale),0,float(k * Scale) });
+					}
+				}
+				for (auto& vertex : vertices)
+				{
+					vertex.X -= (SizeX * Scale) / 2;
+					vertex.Y -= (SizeY * Scale / 2);
+				}
+				UKismetProceduralMeshLibrary::CreateGridMeshTriangles(SizeX, WallHeight, true, triangles);
+				break;
+			case Direction::East:
+				for (int j = 0; j < SizeY; j++)
+				{
+					for (int k = 0; k < WallHeight; k++)
+					{
+						vertices.Push(FVector{ 0,float(j * Scale),float(k * Scale) });
+					}
+				}
+				for (auto& vertex : vertices)
+				{
+					vertex.X += (SizeX * Scale / 2) - Scale;
+					vertex.Y -= (SizeY * Scale / 2);
+				}
+				UKismetProceduralMeshLibrary::CreateGridMeshTriangles(SizeY, WallHeight, true, triangles);
+				break;
+			case Direction::West:
+				for (int j = 0; j < SizeY; j++)
+				{
+					for (int k = 0; k < WallHeight; k++)
+					{
+						vertices.Push(FVector{ 0,float(j * Scale),float(k * Scale) });
+					}
+				}
+				for (auto& vertex : vertices)
+				{
+					vertex.X -= (SizeX * Scale) / 2;
+					vertex.Y -= (SizeY * Scale / 2);
+				}
+				UKismetProceduralMeshLibrary::CreateGridMeshTriangles(SizeY, WallHeight, false, triangles);
+				break;
+			}
+
+			// For each vertex, get 2 different noise values and apply them to vertex hight at different scales.
+			for (auto& vertex : vertices)
+			{
+				// Get input vector from vertex list and sample noise at different levels
+				auto input = vertex + GetActorLocation();
+				auto result1 = noise->GetNoise(input.X / 0.9, input.Y / 0.9, input.Z / 0.9);
+				auto result2 = noise->GetNoise(input.X / 0.5, input.Y / 0.5, input.Z / 0.5);
+
+				if (vertex.Z == 0)
+				{
+					vertex.Z += result1 * 8;
+					vertex.Z += result2 * 2;
+				}
+				else if (vertex.Z == WallHeight * Scale - Scale)
+				{
+					vertex.Z += result1 * 8;
+					vertex.Z += result2 * 2;
+				}			 
+				else
+				{
+					vertex.Y += result1 * 15;
+					vertex.Y += result2 * 5;
+					vertex.X += result1 * 15;
+					vertex.X += result2 * 5;							
+				}
+			}
+
+			normals.Init({ 0,0,0 }, vertices.Num());
+			CalculateNormals(normals, vertices, triangles);
+
+			ProcMesh->CreateMeshSection(index, vertices, triangles, normals, UVs, VertexColours, Tangents, true);
+			ProcMesh->SetMaterial(index, Material);
+		}
+		index++;
+	}
 }
 
 void ARoom::CalculateNormals(TArray<FVector>& normals,TArray<FVector> vertices, TArray<int32> triangles)

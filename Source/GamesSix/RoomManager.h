@@ -21,6 +21,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 public:	
 	// Called every frame
@@ -29,27 +30,16 @@ public:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ARoom> RoomClass;
 
-	UPROPERTY(VisibleAnywhere)
-		UMaterialInstance* Material;
-
-	UPROPERTY(EditAnywhere)
-		UProceduralMeshComponent* WallMesh;
-
 	TArray<ARoom*> Rooms;
-	TArray<int32> Triangles;
-	TArray<FVector> Normals;
-	TArray<FVector2D> UVs;
-	TArray<FColor> VertexColours;
-	TArray<FProcMeshTangent> Tangents;
 
 	void DrawDebugConnections();
 
-	int MaxRecursionLevel = 8;
-	void SpawnNewRooms(ARoom* node, int level,FastNoise* noise);
+	int MaxRecursionLevel = 12;
+	void SpawnNewRooms(ARoom* node, int level, FastNoise* noise);
 
 	UFUNCTION(CallInEditor)
 	void MakeNewLevel();
 
 	void MakeWalls(FastNoise* noise);
-	int WallHeight = 10;
+
 };

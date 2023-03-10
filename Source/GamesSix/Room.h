@@ -42,7 +42,7 @@ public:
 		int WallSizeZ = 20;
 
 	UPROPERTY(EditAnywhere, Category = "Geometry")
-		int Scale = 50;
+		int Scale = 30;
 	
 	UPROPERTY(VisibleAnywhere)
 		int ID = 0;
@@ -51,6 +51,8 @@ public:
 
 	UFUNCTION(CallInEditor)
 		void GenerateRandomMesh();
+
+	void MakeWalls(FastNoise* noise);
 
 	void GenerateMesh(FastNoise* noise);
 
@@ -69,6 +71,7 @@ private:
 	void CreateTop(FastNoise* noise);
 
 	bool MeshGenerated = false;
+	int WallHeight = 10;
 
 	TArray<FVector> Vertices;
 	TArray<int32> Triangles;
@@ -84,7 +87,4 @@ private:
 	TArray<FVector> WallVertices;
 	TArray<int32> WallTriangles;
 	TArray<FVector> WallNormals;
-
-
-
 };

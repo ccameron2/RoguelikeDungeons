@@ -10,12 +10,6 @@ ARoomManager::ARoomManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	WallMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Room Mesh"));
-	WallMesh->SetupAttachment(RootComponent);
-
-	ConstructorHelpers::FObjectFinder<UMaterialInstance> forestMaterial(TEXT("M_Material'/Game/Materials/M_Material.M_Material'"));
-	Material = forestMaterial.Object;
 }
 
 // Called when the game starts or when spawned
@@ -31,6 +25,10 @@ void ARoomManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	UKismetSystemLibrary::FlushPersistentDebugLines(GetWorld());
 }
 
+void ARoomManager::OnConstruction(const FTransform& Transform)
+{
+}
+
 // Called every frame
 void ARoomManager::Tick(float DeltaTime)
 {
@@ -42,9 +40,6 @@ void ARoomManager::SpawnNewRooms(ARoom* node, int level, FastNoise* noise)
 {
 	int numRooms = FMath::RandRange(1, 3);
 
-	if(numRooms == 3 || numRooms == 2) numRooms = FMath::RandRange(1, 3);
-	if(numRooms == 3 || numRooms == 2) numRooms = FMath::RandRange(1, 3);
-	if(numRooms == 3 || numRooms == 2) numRooms = FMath::RandRange(1, 3);
 	if(numRooms == 3 || numRooms == 2) numRooms = FMath::RandRange(1, 3);
 
 	for (int i = 0; i < numRooms; i++)
@@ -122,10 +117,12 @@ void ARoomManager::MakeNewLevel()
 		for (auto& room : Rooms)
 		{
 			room->ProcMesh->ClearMeshSection(0);
+			room->ProcMesh->ClearMeshSection(1);
 			room->Destroy();
 		}
 		Rooms.Empty();
 	}
+
 	FastNoise noise;
 	noise.SetNoiseType(FastNoise::SimplexFractal);
 	noise.SetSeed(FMath::Rand());
@@ -133,9 +130,11 @@ void ARoomManager::MakeNewLevel()
 	FTransform transform;
 	auto location = FVector{ 0,0,0 };
 	transform.SetLocation(location);
+
 	ARoom* root = GetWorld()->SpawnActor<ARoom>(RoomClass, transform);
 	root->GenerateMesh(&noise);
 	Rooms.Push(root);
+
 	SpawnNewRooms(root,0,&noise);
 	DrawDebugConnections();
 	MakeWalls(&noise);
@@ -147,123 +146,7 @@ void ARoomManager::MakeWalls(FastNoise* noise)
 
 	for (auto& room : Rooms)
 	{
-		for (int i = 0; i < 4; i++)
-		{
-			auto direction = static_cast<Direction>(i);
-			if (!room->UsedDirections.Contains(direction))
-			{
-				FVector location = room->GetActorLocation();
-				TArray<FVector> vertices;
-				TArray<FVector> normals;
-				TArray<int32> triangles;
-
-				switch (direction)
-				{
-				case Direction::North:
-					for (int j = 0; j < room->SizeX; j++)
-					{
-						for (int k = 0; k < WallHeight; k++)
-						{
-							vertices.Push(FVector{ float(j * room->Scale),0,float(k * room->Scale) });
-						}
-					}
-					for (auto& vertex : vertices)
-					{
-						vertex.X -= (room->SizeX * room->Scale) / 2;
-						vertex.Y += (room->SizeY * room->Scale / 2) - room->Scale;
-						vertex += location;
-					}
-					UKismetProceduralMeshLibrary::CreateGridMeshTriangles(room->SizeX, WallHeight, false, triangles);
-					break;
-				case Direction::South:
-					for (int j = 0; j < room->SizeX; j++)
-					{
-						for (int k = 0; k < WallHeight; k++)
-						{
-							vertices.Push(FVector{ float(j * room->Scale),0,float(k * room->Scale) });
-						}
-					}
-					for (auto& vertex : vertices)
-					{
-						vertex.X -= (room->SizeX * room->Scale) / 2;
-						vertex.Y -= (room->SizeY * room->Scale / 2);
-						vertex += location;
-					}
-					UKismetProceduralMeshLibrary::CreateGridMeshTriangles(room->SizeX, WallHeight, true, triangles);
-					break;
-				case Direction::East:
-					for (int j = 0; j < room->SizeY; j++)
-					{
-						for (int k = 0; k < WallHeight; k++)
-						{
-							vertices.Push(FVector{ 0,float(j * room->Scale),float(k * room->Scale) });
-						}
-					}
-					for (auto& vertex : vertices)
-					{
-						vertex.X += (room->SizeX * room->Scale / 2) - room->Scale;
-						vertex.Y -= (room->SizeY * room->Scale / 2);
-						vertex += location;
-					}
-					UKismetProceduralMeshLibrary::CreateGridMeshTriangles(room->SizeY, WallHeight, true, triangles);
-					break;
-				case Direction::West:
-					for (int j = 0; j < room->SizeY; j++)
-					{
-						for (int k = 0; k < WallHeight; k++)
-						{
-							vertices.Push(FVector{ 0,float(j * room->Scale),float(k * room->Scale) });
-						}
-					}
-					for (auto& vertex : vertices)
-					{
-						vertex.X -= (room->SizeX * room->Scale) / 2;
-						vertex.Y -= (room->SizeY * room->Scale / 2);
-						vertex += location;
-					}
-					UKismetProceduralMeshLibrary::CreateGridMeshTriangles(room->SizeY, WallHeight, false, triangles);
-					break;
-				}
-
-				// For each vertex, get 2 different noise values and apply them to vertex hight at different scales.
-				for (auto& vertex : vertices)
-				{
-					// Get input vector from vertex list and sample noise at different levels
-					auto input = vertex + GetActorLocation();
-					auto result1 = noise->GetNoise(input.X / 0.9, input.Y / 0.9, input.Z / 0.9);
-					vertex.Z += result1 * 25;
-					auto result2 = noise->GetNoise(input.X / 0.5, input.Y / 0.5, input.Z / 0.5);
-					vertex.Z += result2 * 10;
-
-					if (vertex.Z == 0)
-					{
-						vertex.Z += result1 * 15;
-						vertex.Z += result2 * 5;
-					}
-					else if (vertex.Z == WallHeight)
-					{
-						vertex.Z += result1 * 15;
-						vertex.Z += result2 * 5;
-					}
-					else
-					{
-						vertex.X += result1 * 15;
-						vertex.X += result2 * 5;
-						
-						vertex.Y += result1 * 15;
-						vertex.Y += result2 * 5;
-					}
-				}
-
-				normals.Init({ 0,0,0 }, vertices.Num());
-				room->CalculateNormals(normals,vertices,triangles);
-
-				WallMesh->CreateMeshSection(index, vertices, triangles, normals, UVs, VertexColours, Tangents, true);
-				WallMesh->SetMaterial(index, Material);
-				index++;
-				
-			}
-		}							
+		room->MakeWalls(noise);		
 	}
 }
 
