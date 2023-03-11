@@ -16,8 +16,6 @@ ARoomManager::ARoomManager()
 void ARoomManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	MakeNewLevel();
 }
 
 void ARoomManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -27,6 +25,7 @@ void ARoomManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ARoomManager::OnConstruction(const FTransform& Transform)
 {
+	SetActorLocation(FVector{ 0,0,0 });
 }
 
 // Called every frame

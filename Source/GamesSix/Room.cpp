@@ -10,8 +10,10 @@ ARoom::ARoom()
 	ProcMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Room Mesh"));
 	SetRootComponent(ProcMesh);
 
-	ConstructorHelpers::FObjectFinder<UMaterialInstance> forestMaterial(TEXT("M_Material'/Game/Materials/M_Material.M_Material'"));
-	Material = forestMaterial.Object;
+	ConstructorHelpers::FObjectFinder<UMaterialInstance> material(TEXT("M_Material'/Game/Materials/M_Material.M_Material'"));
+	Material = material.Object;
+
+	for(int i = 0; i < 4; i++)	PointLights.Push(CreateDefaultSubobject<UPointLightComponent>(TEXT("Point Light " + i)));
 
 }
 
@@ -21,10 +23,32 @@ void ARoom::BeginPlay()
 	Super::BeginPlay();
 }
 
+void ARoom::OnConstruction(const FTransform& Transform)
+{
+}
+
 // Called every frame
 void ARoom::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	auto distance = FVector::Distance(GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+	if (distance < 1000)
+	{
+		if (LightsOn) return;
+		for (auto& light : PointLights)
+		{
+			light->SetVisibility(true);
+			LightsOn = true;
+		}
+	}
+	else
+	{
+		LightsOn = false;
+		for (auto& light : PointLights)
+		{
+			light->SetVisibility(false);
+		}
+	}
 }
 
 void ARoom::GenerateMesh(FastNoise* noise)
@@ -35,9 +59,11 @@ void ARoom::GenerateMesh(FastNoise* noise)
 	UVs.Empty();
 	VertexColours.Empty();
 	Tangents.Empty();
-	ProcMesh->ClearMeshSection(0);
+	ProcMesh->ClearAllMeshSections();
+
 	CreateFloor(noise);
 	CreateTop(noise);
+	CreateLights();
 }
 
 void ARoom::CreateFloor(FastNoise* noise)
@@ -135,6 +161,30 @@ void ARoom::CreateTop(FastNoise* noise)
 	// Create mesh section
 	ProcMesh->CreateMeshSection(1, TopVertices, TopTriangles, TopNormals, UVs, VertexColours, Tangents, true);
 	ProcMesh->SetMaterial(1, Material);
+}
+
+void ARoom::CreateLights()
+{
+	for (int i = 0; i < 4; i++)
+	{
+		PointLights[i]->LightColor = FColor{ 253,138,20 };
+		PointLights[i]->Intensity = 500.0f;
+		PointLights[i]->AttenuationRadius = 300.0f;
+
+		auto direction = static_cast<Direction>(i);
+
+		if (direction == North) PointLights[i]->SetWorldLocation(GetActorLocation() + FVector{ 0,float(SizeY * Scale - Scale) / 2,float(WallSizeZ * Scale) / 2 - 4 * Scale });
+		if (direction == South) PointLights[i]->SetWorldLocation(GetActorLocation() + FVector{ 0,float(-SizeY * Scale + Scale) / 2,float(WallSizeZ * Scale) / 2 - 4 * Scale });
+		if (direction == East) PointLights[i]->SetWorldLocation(GetActorLocation() + FVector{ float(SizeX * Scale - Scale) / 2,0,float(WallSizeZ * Scale) / 2 - 4 * Scale });
+		if (direction == West) PointLights[i]->SetWorldLocation(GetActorLocation() + FVector{ float(-SizeX * Scale + Scale) / 2 ,0,float(WallSizeZ * Scale) / 2 - 4 * Scale });
+
+		if (!UsedDirections.Contains(direction))
+		{
+			PointLights[direction]->DestroyComponent();
+			PointLights.RemoveAt(direction);
+		}		
+		PointLights[i]->SetVisibility(false);
+	}
 }
 
 void ARoom::GenerateTriangles(int sizeX, int sizeY, TArray<int32>& triangles)

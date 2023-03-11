@@ -6,6 +6,8 @@
 #include "KismetProceduralMeshLibrary.h"
 #include "External/FastNoise.h"
 
+#include "Components/PointLightComponent.h" 
+
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Room.generated.h"
@@ -22,6 +24,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void OnConstruction(const FTransform& Transform) override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -47,6 +51,9 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		int ID = 0;
 
+	UPROPERTY(EditAnywhere)
+	TArray<UPointLightComponent*> PointLights;
+
 	TArray<ARoom*> Connections;
 
 	UFUNCTION(CallInEditor)
@@ -69,9 +76,10 @@ public:
 private:
 	void CreateFloor(FastNoise* noise);
 	void CreateTop(FastNoise* noise);
-
+	void CreateLights();
 	bool MeshGenerated = false;
 	int WallHeight = 10;
+	bool LightsOn = false;
 
 	TArray<FVector> Vertices;
 	TArray<int32> Triangles;
@@ -87,4 +95,7 @@ private:
 	TArray<FVector> WallVertices;
 	TArray<int32> WallTriangles;
 	TArray<FVector> WallNormals;
+
+
+
 };

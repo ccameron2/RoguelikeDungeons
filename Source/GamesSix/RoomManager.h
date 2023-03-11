@@ -34,7 +34,7 @@ public:
 
 	void DrawDebugConnections();
 
-	int MaxRecursionLevel = 12;
+	int MaxRecursionLevel = 5;
 	void SpawnNewRooms(ARoom* node, int level, FastNoise* noise);
 
 	UFUNCTION(CallInEditor)
