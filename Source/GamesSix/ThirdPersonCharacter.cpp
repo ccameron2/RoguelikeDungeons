@@ -41,8 +41,19 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 void AThirdPersonCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	ThirdPersonCamera->SetActive(false);
-	FirstPersonCamera->SetActive(true);
+	ThirdPersonCamera->SetActive(true);
+	FirstPersonCamera->SetActive(false);
+
+
+	FTransform transform;
+	FVector location;
+	location = GetActorLocation() - FVector{ -10,0,0 };
+
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), TorchClass, Torches);
+
+	//Torch = GetWorld()->SpawnActor<ATorch>(TorchClass, transform);
+	//Torch->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform, "Middle1_L");
+	//Torch->SetActorEnableCollision(false);
 }
 
 // Called every frame
@@ -52,6 +63,49 @@ void AThirdPersonCharacter::Tick(float DeltaTime)
 	if(Energy < MaxEnergy){ Energy++; }
 	if (ExpPoints >= MaxExp) { LevelUp(); }
 	
+	//if (Torches.Num() > 0)
+	//{
+	//	for (auto& torch : Torches)
+	//	{
+	//		//if (FVector::Distance(torch->GetActorLocation(), GetActorLocation()) < 2000)
+	//		//{
+	//		//	auto torchC = static_cast<ATorch*>(torch);
+	//		//	torchC->PointLight->SetVisibility(true);
+	//		//}
+	//		FHitResult HitResult;
+	//		FCollisionQueryParams CollisionParams;
+
+	//		bool bHit = GetWorld()->LineTraceSingleByChannel(
+	//			HitResult,
+	//			ThirdPersonCamera->GetComponentLocation(),
+	//			torch->GetActorLocation(),
+	//			ECC_Visibility, // channel used to check for visibility
+	//			CollisionParams
+	//		);
+
+	//		if (HitResult.GetComponent())
+	//		{
+	//			FString s = HitResult.GetComponent()->GetName();
+	//			UE_LOG(LogTemp, Display, TEXT("Component name: %s"), *s);
+	//		}
+
+	//		//DrawDebugLine(GetWorld(), ThirdPersonCamera->GetComponentLocation(), torch->GetActorLocation(), FColor{ 255,0,255 }, false, 1.0f, 0, 10.0f);
+	//		auto torchC = static_cast<ATorch*>(torch);
+	//		if (bHit)
+	//		{
+	//			auto torchSphere = dynamic_cast<USphereComponent*>(HitResult.GetComponent());
+	//			if (torchSphere == torchC->LightCollision)
+	//			{
+	//				torchC->PointLight->SetVisibility(true);
+	//			}
+	//			else
+	//			{
+	//				torchC->PointLight->SetVisibility(false);
+	//			}
+	//		}
+
+	//	}
+	//}
 }
 
 // Called to bind functionality to input

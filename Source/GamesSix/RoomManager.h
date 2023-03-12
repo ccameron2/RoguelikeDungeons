@@ -4,6 +4,7 @@
 
 #include "Room.h"
 
+
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "RoomManager.generated.h"
@@ -22,7 +23,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
-
+	virtual void Destroyed() override;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -34,12 +35,13 @@ public:
 
 	void DrawDebugConnections();
 
-	int MaxRecursionLevel = 5;
+	int MaxRecursionLevel = 12;
 	void SpawnNewRooms(ARoom* node, int level, FastNoise* noise);
 
 	UFUNCTION(CallInEditor)
 	void MakeNewLevel();
 
 	void MakeWalls(FastNoise* noise);
+
 
 };

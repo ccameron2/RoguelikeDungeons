@@ -12,9 +12,6 @@ ARoom::ARoom()
 
 	ConstructorHelpers::FObjectFinder<UMaterialInstance> material(TEXT("M_Material'/Game/Materials/M_Material.M_Material'"));
 	Material = material.Object;
-
-	for(int i = 0; i < 4; i++)	PointLights.Push(CreateDefaultSubobject<UPointLightComponent>(TEXT("Point Light " + i)));
-
 }
 
 // Called when the game starts or when spawned
@@ -25,34 +22,31 @@ void ARoom::BeginPlay()
 
 void ARoom::OnConstruction(const FTransform& Transform)
 {
+
 }
 
+
+void ARoom::Destroyed()
+{
+	Super::Destroyed();
+	if (!Torches.IsEmpty())
+	{
+		for (auto torch : Torches)
+		{
+			torch->Destroy();
+		}
+		Torches.Empty();
+	}
+}
 // Called every frame
 void ARoom::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	auto distance = FVector::Distance(GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
-	if (distance < 1000)
-	{
-		if (LightsOn) return;
-		for (auto& light : PointLights)
-		{
-			light->SetVisibility(true);
-			LightsOn = true;
-		}
-	}
-	else
-	{
-		LightsOn = false;
-		for (auto& light : PointLights)
-		{
-			light->SetVisibility(false);
-		}
-	}
 }
 
 void ARoom::GenerateMesh(FastNoise* noise)
 {
+
 	Vertices.Empty();
 	Triangles.Empty();
 	Normals.Empty();
@@ -61,9 +55,11 @@ void ARoom::GenerateMesh(FastNoise* noise)
 	Tangents.Empty();
 	ProcMesh->ClearAllMeshSections();
 
+	//SizeX = FMath::RandRange(5, 25);
+	//SizeY = FMath::RandRange(5, 25);
+
 	CreateFloor(noise);
 	CreateTop(noise);
-	CreateLights();
 }
 
 void ARoom::CreateFloor(FastNoise* noise)
@@ -78,7 +74,7 @@ void ARoom::CreateFloor(FastNoise* noise)
 		for (int j = 0; j < SizeY; j++)
 		{
 			FVector newVector = FVector{ float(i * Scale), float(j * Scale),0 };
-			Vertices[SizeX * indexX + indexY] = newVector;
+			Vertices[SizeY * indexX + indexY] = newVector;
 			indexY++;
 		}
 		indexX++;
@@ -126,7 +122,7 @@ void ARoom::CreateTop(FastNoise* noise)
 		for (int j = 0; j < SizeY; j++)
 		{
 			FVector newVector = FVector{ float(i * Scale), float(j * Scale),0 };
-			TopVertices[SizeX * indexX + indexY] = newVector;
+			TopVertices[SizeY * indexX + indexY] = newVector;
 			indexY++;
 		}
 		indexX++;
@@ -163,30 +159,6 @@ void ARoom::CreateTop(FastNoise* noise)
 	ProcMesh->SetMaterial(1, Material);
 }
 
-void ARoom::CreateLights()
-{
-	for (int i = 0; i < 4; i++)
-	{
-		PointLights[i]->LightColor = FColor{ 253,138,20 };
-		PointLights[i]->Intensity = 500.0f;
-		PointLights[i]->AttenuationRadius = 300.0f;
-
-		auto direction = static_cast<Direction>(i);
-
-		if (direction == North) PointLights[i]->SetWorldLocation(GetActorLocation() + FVector{ 0,float(SizeY * Scale - Scale) / 2,float(WallSizeZ * Scale) / 2 - 4 * Scale });
-		if (direction == South) PointLights[i]->SetWorldLocation(GetActorLocation() + FVector{ 0,float(-SizeY * Scale + Scale) / 2,float(WallSizeZ * Scale) / 2 - 4 * Scale });
-		if (direction == East) PointLights[i]->SetWorldLocation(GetActorLocation() + FVector{ float(SizeX * Scale - Scale) / 2,0,float(WallSizeZ * Scale) / 2 - 4 * Scale });
-		if (direction == West) PointLights[i]->SetWorldLocation(GetActorLocation() + FVector{ float(-SizeX * Scale + Scale) / 2 ,0,float(WallSizeZ * Scale) / 2 - 4 * Scale });
-
-		if (!UsedDirections.Contains(direction))
-		{
-			PointLights[direction]->DestroyComponent();
-			PointLights.RemoveAt(direction);
-		}		
-		PointLights[i]->SetVisibility(false);
-	}
-}
-
 void ARoom::GenerateTriangles(int sizeX, int sizeY, TArray<int32>& triangles)
 {
 	const int NumTriangles = 2 * (sizeX - 1) * (sizeY - 1);
@@ -221,13 +193,13 @@ void ARoom::GenerateRandomMesh()
 
 void ARoom::MakeWalls(FastNoise* noise)
 {
+	FTransform transform;
 	int index = 2;
 	for (int i = 0; i < 4; i++)
 	{
 		auto direction = static_cast<Direction>(i);
 		if (!UsedDirections.Contains(direction))
 		{
-
 			FVector location = GetActorLocation();
 			TArray<FVector> vertices;
 			TArray<FVector> normals;
@@ -249,6 +221,9 @@ void ARoom::MakeWalls(FastNoise* noise)
 					vertex.Y += (SizeY * Scale / 2) - Scale;
 				}
 				UKismetProceduralMeshLibrary::CreateGridMeshTriangles(SizeX, WallHeight, false, triangles);
+
+				transform.SetLocation((GetActorLocation() + FVector{ 0,float((SizeY * Scale / 2) - 2 * Scale),float(WallSizeZ * Scale) / 2 - 4 * Scale }));
+				transform.SetRotation(FVector{ 0,0,0 }.ToOrientationQuat());
 				break;
 			case Direction::South:
 				for (int j = 0; j < SizeX; j++)
@@ -264,6 +239,8 @@ void ARoom::MakeWalls(FastNoise* noise)
 					vertex.Y -= (SizeY * Scale / 2);
 				}
 				UKismetProceduralMeshLibrary::CreateGridMeshTriangles(SizeX, WallHeight, true, triangles);
+				transform.SetLocation(GetActorLocation() + FVector{ 0,float(-SizeY * Scale + Scale) / 2,float(WallSizeZ * Scale) / 2 - 4 * Scale });
+				transform.SetRotation(FVector{ 0,0,0 }.ToOrientationQuat());
 				break;
 			case Direction::East:
 				for (int j = 0; j < SizeY; j++)
@@ -279,6 +256,8 @@ void ARoom::MakeWalls(FastNoise* noise)
 					vertex.Y -= (SizeY * Scale / 2);
 				}
 				UKismetProceduralMeshLibrary::CreateGridMeshTriangles(SizeY, WallHeight, true, triangles);
+				transform.SetLocation((GetActorLocation() + FVector{ float((SizeX * Scale / 2) - 2 * Scale),0,float(WallSizeZ * Scale) / 2 - 4 * Scale }));
+				transform.SetRotation(FVector{ 0,0,0 }.ToOrientationQuat());
 				break;
 			case Direction::West:
 				for (int j = 0; j < SizeY; j++)
@@ -294,6 +273,8 @@ void ARoom::MakeWalls(FastNoise* noise)
 					vertex.Y -= (SizeY * Scale / 2);
 				}
 				UKismetProceduralMeshLibrary::CreateGridMeshTriangles(SizeY, WallHeight, false, triangles);
+				transform.SetLocation((GetActorLocation() + FVector{ float(( -SizeX * Scale  / 2) + 2 * Scale) ,0,float(WallSizeZ * Scale) / 2 - 4 * Scale}));
+				transform.SetRotation(FVector{ 0,90,0 }.ToOrientationQuat());
 				break;
 			}
 
@@ -329,6 +310,25 @@ void ARoom::MakeWalls(FastNoise* noise)
 
 			ProcMesh->CreateMeshSection(index, vertices, triangles, normals, UVs, VertexColours, Tangents, true);
 			ProcMesh->SetMaterial(index, Material);
+
+			// Place torches randomly
+			if(Torches.IsEmpty())
+			{
+				auto torch = GetWorld()->SpawnActor<ATorch>(TorchClass, transform);
+				torch->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+				torch->SetOwner(this);
+				Torches.Push(torch);
+			}
+			/*if (Torches.Num() < 2)
+			{
+				if (FMath::RandRange(0, 6) == 0)
+				{
+					auto torch = GetWorld()->SpawnActor<ATorch>(TorchClass, transform);
+					torch->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+					torch->SetOwner(this);
+					Torches.Push(torch);
+				}
+			}*/
 		}
 		index++;
 	}

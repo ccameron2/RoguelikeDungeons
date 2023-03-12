@@ -6,6 +6,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "ResourcePickup.h"
+#include "Torch.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
@@ -145,4 +146,12 @@ private:
 	UPROPERTY(EditAnywhere)
 		USpringArmComponent* SpringArm;
 
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ATorch> TorchClass;
+
+	UPROPERTY(EditAnywhere)
+		ATorch* Torch;
+
+
+	TArray<AActor*> Torches;
 };

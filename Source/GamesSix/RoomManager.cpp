@@ -25,21 +25,36 @@ void ARoomManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ARoomManager::OnConstruction(const FTransform& Transform)
 {
+	Super::OnConstruction(Transform);
 	SetActorLocation(FVector{ 0,0,0 });
 }
 
 // Called every frame
 void ARoomManager::Tick(float DeltaTime)
 {
+
 	Super::Tick(DeltaTime);
 
+}
+
+void ARoomManager::Destroyed()
+{
+	Super::Destroyed();
+	if (!Rooms.IsEmpty())
+	{
+		for (auto room : Rooms)
+		{
+			room->Destroy();
+		}
+		Rooms.Empty();
+	}
 }
 
 void ARoomManager::SpawnNewRooms(ARoom* node, int level, FastNoise* noise)
 {
 	int numRooms = FMath::RandRange(1, 3);
 
-	if(numRooms == 3 || numRooms == 2) numRooms = FMath::RandRange(1, 3);
+	//if(numRooms == 3 || numRooms == 2) numRooms = FMath::RandRange(1, 3);
 
 	for (int i = 0; i < numRooms; i++)
 	{
@@ -75,9 +90,10 @@ void ARoomManager::SpawnNewRooms(ARoom* node, int level, FastNoise* noise)
 		FVector End = location - FVector{ 0,0,float(node->Scale * node->WallSizeZ)};
 		ECollisionChannel Channel = ECC_Visibility;
 		FCollisionQueryParams Params;
-		//ActorLineTraceSingle(Hit, Start, End, Channel, Params);
 		GetWorld()->LineTraceSingleByChannel(Hit, Start, End, Channel, Params);
+
 		DrawDebugLine(GetWorld(), Start, End, Hit.bBlockingHit ? FColor::Red : FColor::Blue, true, 5.0f, 0, 10.0f);
+
 		auto hitActor = Cast<ARoom>(Hit.GetActor());
 		if (!hitActor)
 		{
@@ -115,8 +131,7 @@ void ARoomManager::MakeNewLevel()
 	{
 		for (auto& room : Rooms)
 		{
-			room->ProcMesh->ClearMeshSection(0);
-			room->ProcMesh->ClearMeshSection(1);
+			room->ProcMesh->ClearAllMeshSections();
 			room->Destroy();
 		}
 		Rooms.Empty();
