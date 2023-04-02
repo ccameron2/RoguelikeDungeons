@@ -161,7 +161,8 @@ void ARoomManager::MakeWalls(FastNoise* noise)
 
 	for (auto& room : Rooms)
 	{
-		room->MakeWalls(noise);		
+		room->MakeWalls(noise);
+		room->PlaceObjects();
 	}
 }
 

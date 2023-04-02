@@ -54,11 +54,18 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		int ID = 0;
 
+	UPROPERTY(VisibleAnywhere)
+		int NumWalls = 0;
+
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ATorch> TorchClass;
 
 	UPROPERTY(EditAnywhere)
 		UInstancedStaticMeshComponent* PillarMesh;
+
+	UPROPERTY(EditAnywhere)
+		UInstancedStaticMeshComponent* ChestMesh;
+
 
 	UPROPERTY(EditAnywhere)
 	TArray<ATorch*> Torches;
@@ -70,6 +77,7 @@ public:
 
 	void MakeWalls(FastNoise* noise);
 	void GenerateMesh(FastNoise* noise);
+	void PlaceObjects();
 
 	enum Direction
 	{

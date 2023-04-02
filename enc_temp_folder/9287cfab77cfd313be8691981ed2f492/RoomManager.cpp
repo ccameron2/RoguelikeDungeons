@@ -16,6 +16,7 @@ ARoomManager::ARoomManager()
 void ARoomManager::BeginPlay()
 {
 	Super::BeginPlay();
+	MakeNewLevel();
 }
 
 void ARoomManager::EndPlay(const EEndPlayReason::Type EndPlayReason)

@@ -4,6 +4,8 @@
 
 #include <ProceduralMeshComponent.h>
 #include "KismetProceduralMeshLibrary.h"
+#include "Components/InstancedStaticMeshComponent.h" 
+
 #include "External/FastNoise.h"
 
 #include "Torch.h"
@@ -38,10 +40,10 @@ public:
 		UMaterialInstance* Material;
 
 	UPROPERTY(EditAnywhere, Category = "Geometry")
-		int SizeX = 25;
+		float SizeX = 25;
 
 	UPROPERTY(EditAnywhere, Category = "Geometry")
-		int SizeY = 15;
+		float SizeY = 15;
 
 	UPROPERTY(EditAnywhere, Category = "Geometry")
 		int WallSizeZ = 20;
@@ -52,8 +54,18 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		int ID = 0;
 
+	UPROPERTY(VisibleAnywhere)
+		int NumWalls = 0;
+
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ATorch> TorchClass;
+
+	UPROPERTY(EditAnywhere)
+		UInstancedStaticMeshComponent* PillarMesh;
+
+	UPROPERTY(EditAnywhere)
+		UInstancedStaticMeshComponent* ChestMesh;
+
 
 	UPROPERTY(EditAnywhere)
 	TArray<ATorch*> Torches;
@@ -64,7 +76,6 @@ public:
 		void GenerateRandomMesh();
 
 	void MakeWalls(FastNoise* noise);
-
 	void GenerateMesh(FastNoise* noise);
 
 	enum Direction
@@ -80,6 +91,8 @@ public:
 private:
 	void CreateFloor(FastNoise* noise);
 	void CreateTop(FastNoise* noise);
+	void PlacePillars();
+	void PlaceObjects();
 	bool MeshGenerated = false;
 	int WallHeight = 11;
 

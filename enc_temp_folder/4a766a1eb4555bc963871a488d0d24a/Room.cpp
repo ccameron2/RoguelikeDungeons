@@ -12,6 +12,14 @@ ARoom::ARoom()
 
 	ConstructorHelpers::FObjectFinder<UMaterialInstance> material(TEXT("M_Material'/Game/Materials/M_Material.M_Material'"));
 	Material = material.Object;
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset1(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Column2_Column2'"));
+	PillarMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Pillar Static Mesh"));
+	PillarMesh->SetStaticMesh(meshAsset1.Object);
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset2(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Chest_Gold_Chest_Base'"));
+	ChestMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Chest Static Mesh"));
+	ChestMesh->SetStaticMesh(meshAsset2.Object);
 }
 
 // Called when the game starts or when spawned
@@ -36,6 +44,8 @@ void ARoom::Destroyed()
 		}
 		Torches.Empty();
 	}
+	PillarMesh->ClearInstances();
+	ChestMesh->ClearInstances();
 }
 // Called every frame
 void ARoom::Tick(float DeltaTime)
@@ -59,6 +69,8 @@ void ARoom::GenerateMesh(FastNoise* noise)
 
 	CreateFloor(noise);
 	CreateTop(noise);
+	PlacePillars();
+	PlaceObjects();
 }
 
 void ARoom::CreateFloor(FastNoise* noise)
@@ -134,7 +146,7 @@ void ARoom::CreateTop(FastNoise* noise)
 	{
 		vertex.X -= (SizeX * Scale) / 2;
 		vertex.Y -= (SizeY * Scale) / 2;
-		vertex.Z += ((WallSizeZ * Scale) / 2)-Scale;
+		vertex.Z += ((WallSizeZ * Scale) / 2);
 	}
 
 	// For each vertex, get 2 different noise values and apply them to vertex hight at different scales.
@@ -156,6 +168,46 @@ void ARoom::CreateTop(FastNoise* noise)
 	// Create mesh section
 	ProcMesh->CreateMeshSection(1, TopVertices, TopTriangles, TopNormals, UVs, VertexColours, Tangents, true);
 	ProcMesh->SetMaterial(1, Material);
+}
+
+void ARoom::PlacePillars()
+{
+	for (int i = 0; i < 4; i++)
+	{
+		FVector vertex = FVector{((-SizeX * Scale) / 2), ((-SizeY * Scale) / 2), 0};
+		if (i == 0) vertex += FVector{ (SizeX * Scale) - Scale,0,0 };
+		if (i == 1) vertex += FVector{ (SizeX * Scale) - Scale,(SizeY * Scale) - Scale,0 };
+		if (i == 2) vertex += FVector{ 0,(SizeY * Scale)-Scale,0 };
+		if (i == 3) vertex += FVector{ 0,0,0 };
+
+		// Set location to vertex position and scale randomly
+		FTransform transform;
+		transform.SetLocation(vertex + GetActorLocation());
+		FQuat Rotation = FVector{ 0,0,0 }.ToOrientationQuat();
+		transform.SetRotation(Rotation);
+		//transform.SetScale3D(FVector{ float(FMath::RandRange(0.8,1.2)) });
+
+		PillarMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+		if (PillarMesh) { PillarMesh->AddInstance(transform); }
+	}
+}
+
+void ARoom::PlaceObjects()
+{
+	if(NumWalls >= 3)
+	{
+		FVector vertex = GetActorLocation();
+
+		// Set location to vertex position and scale randomly
+		FTransform transform;
+		transform.SetLocation(vertex + GetActorLocation());
+		FQuat Rotation = FVector{ 0,0,0 }.ToOrientationQuat();
+		transform.SetRotation(Rotation);
+		//transform.SetScale3D(FVector{ float(FMath::RandRange(0.8,1.2)) });
+
+		ChestMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+		if (ChestMesh) { ChestMesh->AddInstance(transform); }
+	}
 }
 
 void ARoom::GenerateTriangles(int sizeX, int sizeY, TArray<int32>& triangles)
@@ -193,12 +245,13 @@ void ARoom::GenerateRandomMesh()
 void ARoom::MakeWalls(FastNoise* noise)
 {
 	FTransform transform;
-	int index = 2;
+	int meshSectionIndex = 2;
 	for (int i = 0; i < 4; i++)
 	{
 		auto direction = static_cast<Direction>(i);
 		if (!UsedDirections.Contains(direction))
 		{
+			NumWalls++;
 			FVector location = GetActorLocation();
 			TArray<FVector> vertices;
 			TArray<FVector> normals;
@@ -307,8 +360,8 @@ void ARoom::MakeWalls(FastNoise* noise)
 			normals.Init({ 0,0,0 }, vertices.Num());
 			CalculateNormals(normals, vertices, triangles);
 
-			ProcMesh->CreateMeshSection(index, vertices, triangles, normals, UVs, VertexColours, Tangents, true);
-			ProcMesh->SetMaterial(index, Material);
+			ProcMesh->CreateMeshSection(meshSectionIndex, vertices, triangles, normals, UVs, VertexColours, Tangents, true);
+			ProcMesh->SetMaterial(meshSectionIndex, Material);
 
 			// Place torches randomly
 			if(Torches.IsEmpty())
@@ -329,7 +382,7 @@ void ARoom::MakeWalls(FastNoise* noise)
 				}
 			}*/
 		}
-		index++;
+		meshSectionIndex++;
 	}
 }
 
