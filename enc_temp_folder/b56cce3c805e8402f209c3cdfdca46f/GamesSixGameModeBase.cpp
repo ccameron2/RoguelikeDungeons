@@ -21,8 +21,4 @@ void AGamesSixGameModeBase::StartPlay()
 	//	ResourcePickup->Type = FMath::RandRange(0, ResourcePickup->MaterialList.Num() - 1);
 	//	ResourcePickup->FinishSpawning(Transform);
 	//}
-
-	auto RoomManager = GetWorld()->SpawnActor<ARoomManager>(RoomManagerClass, FTransform{});
-
-
 }

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "ResourcePickup.h"
-#include "RoomManager.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
@@ -22,7 +21,5 @@ protected:
 private:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AResourcePickup> HealthClass;
-	
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<ARoomManager> RoomManagerClass;
+
 };

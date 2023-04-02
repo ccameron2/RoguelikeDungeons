@@ -15,7 +15,7 @@ ATorch::ATorch()
 	PointLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("Point Light"));
 
 	PointLight->LightColor = FColor{ 253,138,20 };
-	PointLight->Intensity = 15000.0f;
+	PointLight->Intensity = 500.0f;
 	PointLight->AttenuationRadius = 400.0f;
 	PointLight->SetupAttachment(TorchMesh);
 	PointLight->SetVisibility(false);
