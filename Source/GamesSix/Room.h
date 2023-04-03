@@ -62,11 +62,20 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		UInstancedStaticMeshComponent* PillarMesh;
-
 	UPROPERTY(EditAnywhere)
 		UInstancedStaticMeshComponent* ChestMesh;
-
-
+	UPROPERTY(EditAnywhere)
+		UInstancedStaticMeshComponent* FireMesh;
+	UPROPERTY(EditAnywhere)
+		UInstancedStaticMeshComponent* CobwebMesh;
+	UPROPERTY(EditAnywhere)
+		UInstancedStaticMeshComponent* TableMesh;	
+	UPROPERTY(EditAnywhere)
+		UInstancedStaticMeshComponent* BigTableMesh;
+	UPROPERTY(EditAnywhere)
+		UInstancedStaticMeshComponent* BarrelMesh;
+	UPROPERTY(EditAnywhere)
+		UInstancedStaticMeshComponent* ChairMesh;
 	UPROPERTY(EditAnywhere)
 	TArray<ATorch*> Torches;
 
@@ -78,7 +87,7 @@ public:
 	void MakeWalls(FastNoise* noise);
 	void GenerateMesh(FastNoise* noise);
 	void PlaceObjects();
-
+	void LoadMeshes();
 	enum Direction
 	{
 		North,

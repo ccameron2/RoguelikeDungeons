@@ -13,13 +13,7 @@ ARoom::ARoom()
 	ConstructorHelpers::FObjectFinder<UMaterialInstance> material(TEXT("M_Material'/Game/Materials/M_Material.M_Material'"));
 	Material = material.Object;
 
-	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset1(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Column2_Column2'"));
-	PillarMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Pillar Static Mesh"));
-	PillarMesh->SetStaticMesh(meshAsset1.Object);
-
-	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset2(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Chest_Gold_Chest_Base'"));
-	ChestMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Chest Static Mesh"));
-	ChestMesh->SetStaticMesh(meshAsset2.Object);
+	LoadMeshes();
 }
 
 // Called when the game starts or when spawned
@@ -44,8 +38,9 @@ void ARoom::Destroyed()
 		}
 		Torches.Empty();
 	}
-	PillarMesh->ClearInstances();
-	ChestMesh->ClearInstances();
+	if(PillarMesh->GetInstanceCount() > 0) PillarMesh->ClearInstances();
+	
+	if (ChestMesh->GetInstanceCount() > 0) ChestMesh->ClearInstances();
 }
 // Called every frame
 void ARoom::Tick(float DeltaTime)
@@ -195,18 +190,75 @@ void ARoom::PlaceObjects()
 {
 	if(NumWalls >= 3)
 	{
-		FVector vertex = FVector{0,0,0};
+		int roomNum = FMath::RandRange(0, 1);
 
-		// Set location to vertex position and scale randomly
-		FTransform transform;
-		transform.SetLocation(vertex + GetActorLocation());
-		FQuat Rotation = FVector{ 0,0,0 }.ToOrientationQuat();
-		transform.SetRotation(Rotation);
-		//transform.SetScale3D(FVector{ float(FMath::RandRange(0.8,1.2)) });
+		if (roomNum == 0)
+		{
+			// Room 1
+			FVector vertex = FVector{ 0,0,0 };
 
-		ChestMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
-		if (ChestMesh) { ChestMesh->AddInstance(transform); }
+			// Set location to vertex position and scale randomly
+			FTransform transform;
+			transform.SetLocation(vertex + GetActorLocation());
+			FQuat Rotation = FVector{ 0,0,0 }.ToOrientationQuat();
+			transform.SetRotation(Rotation);
+			//transform.SetScale3D(FVector{ float(FMath::RandRange(0.8,1.2)) });
+
+			ChestMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+			if (ChestMesh) { ChestMesh->AddInstance(transform); }
+		}
+		else if(roomNum == 1)
+		{
+			// Room 1
+			FVector vertex = FVector{ 0,0,0 };
+
+			// Set location to vertex position and scale randomly
+			FTransform transform;
+			transform.SetLocation(vertex + GetActorLocation());
+			FQuat Rotation = FVector{ 0,0,0 }.ToOrientationQuat();
+			transform.SetRotation(Rotation);
+			//transform.SetScale3D(FVector{ float(FMath::RandRange(0.8,1.2)) });
+
+			// Spawn other mesh
+			FireMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+			if (FireMesh) { FireMesh->AddInstance(transform); }
+		}
 	}
+}
+
+void ARoom::LoadMeshes()
+{
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset1(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Column2_Column2'"));
+	PillarMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Pillar Static Mesh"));
+	PillarMesh->SetStaticMesh(meshAsset1.Object);
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset2(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Chest_Gold_Chest_Base'"));
+	ChestMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Chest Static Mesh"));
+	ChestMesh->SetStaticMesh(meshAsset2.Object);
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset3(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/WoodFire_WoodFire'"));
+	FireMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Fire Static Mesh"));
+	FireMesh->SetStaticMesh(meshAsset3.Object);
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset4(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Table_Big_Table_Big'"));
+	BigTableMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Table Big Static Mesh"));
+	BigTableMesh->SetStaticMesh(meshAsset4.Object);
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset5(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Barrel'"));
+	BarrelMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Barrel Static Mesh"));
+	BarrelMesh->SetStaticMesh(meshAsset5.Object);
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset6(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Chair'"));
+	ChairMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Chair Static Mesh"));
+	ChairMesh->SetStaticMesh(meshAsset6.Object);
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset7(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Cobweb_Cobweb'"));
+	CobwebMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Cobweb Static Mesh"));
+	CobwebMesh->SetStaticMesh(meshAsset7.Object);
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset8(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Table_Small_Table_Small'"));
+	TableMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Table Small Static Mesh"));
+	TableMesh->SetStaticMesh(meshAsset8.Object);
 }
 
 void ARoom::GenerateTriangles(int sizeX, int sizeY, TArray<int32>& triangles)
