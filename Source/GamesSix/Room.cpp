@@ -21,7 +21,7 @@ void ARoom::BeginPlay()
 {
 	Super::BeginPlay();
 }
-
+ 
 void ARoom::OnConstruction(const FTransform& Transform)
 {
 

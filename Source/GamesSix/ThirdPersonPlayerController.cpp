@@ -19,7 +19,7 @@ void AThirdPersonPlayerController::SetupInputComponent()
 	//Bind inputs to assigned functions
 	InputComponent->BindAxis("Move Forwards", this, &AThirdPersonPlayerController::CallForward);
 	InputComponent->BindAxis("Turn", this, &AThirdPersonPlayerController::CallTurn);
-	InputComponent->BindAction("Fire", EInputEvent::IE_Pressed, this, &AThirdPersonPlayerController::CallFire);
+	InputComponent->BindAction("Fire", EInputEvent::IE_Pressed, this, &AThirdPersonPlayerController::CallAttack);
 	InputComponent->BindAxis("Strafe", this, &AThirdPersonPlayerController::CallStrafe);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AThirdPersonPlayerController::CallJump);
 	InputComponent->BindAxis("Look Up", this, &AThirdPersonPlayerController::CallLookUp);
@@ -46,18 +46,12 @@ void AThirdPersonPlayerController::CallTurn(float Value)
 }
 
 
-void AThirdPersonPlayerController::CallFire()
+void AThirdPersonPlayerController::CallAttack()
 {
-	//if (TimesShot < MaximumAmmo)
-	//{
-		if (PlayerPawn)
-		{
-			//TimesShot++;
-			//ShotsLeft = MaximumAmmo - TimesShot;
-			PlayerPawn->Fire();
-		}
-	//}
-
+	if (PlayerPawn)
+	{
+		PlayerPawn->Attack();
+	}
 }
 
 void AThirdPersonPlayerController::CallStrafe(float Value)

@@ -38,12 +38,21 @@ public:
 	void Strafe(float AxisValue);
 	void Turn(float AxisValue);
 	void LookUp(float AxisValue);
-	void Fire();
+	void Attack();
 	void Jump();
 	void SwapCamera();
 	void ToggleSprint();
+	void EndAttack();
 
 	bool Walking = false;
+	float AttackTime = 1.0f;
+	FTimerHandle AttackTimer;
+
+	UPROPERTY(BlueprintReadWrite)
+		bool IsRolling = false;
+
+	UPROPERTY(BlueprintReadWrite)
+		bool IsAttacking = false;
 
 	UPROPERTY(EditAnywhere)
 		float MoveSpeed = 200.0f;

@@ -31,7 +31,7 @@ private:
 
 	virtual void CallForward(float Value);
 	virtual void CallTurn(float Value);
-	virtual void CallFire();
+	virtual void CallAttack();
 	virtual void CallStrafe(float Value);
 	virtual void CallJump();
 	virtual void CallLookUp(float Value);

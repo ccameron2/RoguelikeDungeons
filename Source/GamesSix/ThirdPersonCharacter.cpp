@@ -159,8 +159,13 @@ void AThirdPersonCharacter::LookUp(float AxisValue)
 	AddControllerPitchInput(AxisValue);
 }
 
-void AThirdPersonCharacter::Fire()
+void AThirdPersonCharacter::Attack()
 {
+	if (!IsAttacking)
+	{
+		GetWorld()->GetTimerManager().SetTimer(AttackTimer, this, &AThirdPersonCharacter::EndAttack, AttackTime, false);
+		IsAttacking = true;
+	}
 }
 
 void AThirdPersonCharacter::Jump()
@@ -183,6 +188,12 @@ void AThirdPersonCharacter::SwapCamera()
 void AThirdPersonCharacter::ToggleSprint()
 {
 	Walking = !Walking;
+}
+
+void AThirdPersonCharacter::EndAttack()
+{
+	IsAttacking = false;
+	AttackTimer.Invalidate();
 }
 
 void AThirdPersonCharacter::LevelUp()
