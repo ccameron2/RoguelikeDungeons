@@ -5,10 +5,10 @@
 #include <ProceduralMeshComponent.h>
 #include "KismetProceduralMeshLibrary.h"
 #include "Components/InstancedStaticMeshComponent.h" 
-
 #include "External/FastNoise.h"
 
 #include "Torch.h"
+#include "Campfire.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -59,13 +59,13 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ATorch> TorchClass;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ACampfire> CampfireClass;
 
 	UPROPERTY(EditAnywhere)
 		UInstancedStaticMeshComponent* PillarMesh;
 	UPROPERTY(EditAnywhere)
 		UInstancedStaticMeshComponent* ChestMesh;
-	UPROPERTY(EditAnywhere)
-		UInstancedStaticMeshComponent* FireMesh;
 	UPROPERTY(EditAnywhere)
 		UInstancedStaticMeshComponent* CobwebMesh;
 	UPROPERTY(EditAnywhere)
@@ -76,8 +76,12 @@ public:
 		UInstancedStaticMeshComponent* BarrelMesh;
 	UPROPERTY(EditAnywhere)
 		UInstancedStaticMeshComponent* ChairMesh;
+
 	UPROPERTY(EditAnywhere)
 	TArray<ATorch*> Torches;
+
+	UPROPERTY(EditAnywhere)
+	TArray<ACampfire*> Campfires;
 
 	TArray<ARoom*> Connections;
 

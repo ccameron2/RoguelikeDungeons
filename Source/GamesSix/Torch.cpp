@@ -36,7 +36,7 @@ void ATorch::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	auto distance = FVector::Distance(GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
-	if (distance > 3500) PointLight->SetVisibility(false);
+	if (distance > LightDisableDistance) PointLight->SetVisibility(false);
 	else PointLight->SetVisibility(true);
 
 	//FHitResult HitResult;

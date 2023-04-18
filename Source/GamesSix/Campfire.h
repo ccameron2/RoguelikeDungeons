@@ -1,22 +1,20 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
 #include "Components/PointLightComponent.h" 
-#include "Components/SphereComponent.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Torch.generated.h"
+#include "Campfire.generated.h"
 
 UCLASS()
-class GAMESSIX_API ATorch : public AActor
+class GAMESSIX_API ACampfire : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ATorch();
+	ACampfire();
 
 protected:
 	// Called when the game starts or when spawned
@@ -30,11 +28,8 @@ public:
 		UPointLightComponent* PointLight;
 
 	UPROPERTY(EditAnywhere)
-		UStaticMeshComponent* TorchMesh;
-
-	AActor* PlayerPawn;
+		UStaticMeshComponent* CampfireMesh;
 
 	UPROPERTY(EditAnywhere)
 		float LightDisableDistance = 3500;
-
 };

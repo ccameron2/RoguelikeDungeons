@@ -93,7 +93,7 @@ void ARoomManager::SpawnNewRooms(ARoom* node, int level, FastNoise* noise)
 		FCollisionQueryParams Params;
 		GetWorld()->LineTraceSingleByChannel(Hit, Start, End, Channel, Params);
 
-		DrawDebugLine(GetWorld(), Start, End, Hit.bBlockingHit ? FColor::Red : FColor::Blue, true, 5.0f, 0, 10.0f);
+		//DrawDebugLine(GetWorld(), Start, End, Hit.bBlockingHit ? FColor::Red : FColor::Blue, true, 5.0f, 0, 10.0f);
 
 		auto hitActor = Cast<ARoom>(Hit.GetActor());
 		if (!hitActor)
@@ -151,7 +151,7 @@ void ARoomManager::MakeNewLevel()
 	Rooms.Push(root);
 
 	SpawnNewRooms(root,0,&noise);
-	DrawDebugConnections();
+	//DrawDebugConnections();
 	MakeWalls(&noise);
 }
 

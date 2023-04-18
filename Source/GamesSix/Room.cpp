@@ -8,7 +8,7 @@ ARoom::ARoom()
 	PrimaryActorTick.bCanEverTick = true;
 
 	ProcMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Room Mesh"));
-	SetRootComponent(ProcMesh);
+	ProcMesh->SetupAttachment(RootComponent);
 
 	ConstructorHelpers::FObjectFinder<UMaterialInstance> material(TEXT("M_Material'/Game/Materials/M_Material.M_Material'"));
 	Material = material.Object;
@@ -203,7 +203,7 @@ void ARoom::PlacePillars()
 				if (PillarMesh) { PillarMesh->AddInstance(transform); }
 			}
 		}
-		DrawDebugLine(GetWorld(), Start, HitResult.Location, FColor(125, 18, 255), true, -1, 0, 20);
+		//DrawDebugLine(GetWorld(), Start, HitResult.Location, FColor(125, 18, 255), true, -1, 0, 20);
 	}
 }
 
@@ -238,11 +238,14 @@ void ARoom::PlaceObjects()
 			transform.SetLocation(vertex + GetActorLocation());
 			FQuat Rotation = FVector{ 0,0,0 }.ToOrientationQuat();
 			transform.SetRotation(Rotation);
-			//transform.SetScale3D(FVector{ float(FMath::RandRange(0.8,1.2)) });
 
-			// Spawn other mesh
-			FireMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
-			if (FireMesh) { FireMesh->AddInstance(transform); }
+			if (Campfires.IsEmpty())
+			{
+				auto campfire = GetWorld()->SpawnActor<ACampfire>(CampfireClass, transform);
+				//campfire->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+				campfire->SetOwner(this);
+				Campfires.Push(campfire);
+			}
 		}
 	}
 }
@@ -255,11 +258,7 @@ void ARoom::LoadMeshes()
 
 	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset2(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Chest_Gold_Chest_Base'"));
 	ChestMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Chest Static Mesh"));
-	ChestMesh->SetStaticMesh(meshAsset2.Object);
-
-	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset3(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/WoodFire_WoodFire'"));
-	FireMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Fire Static Mesh"));
-	FireMesh->SetStaticMesh(meshAsset3.Object);
+	ChestMesh->SetStaticMesh(meshAsset2.Object);	
 
 	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset4(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Table_Big_Table_Big'"));
 	BigTableMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Table Big Static Mesh"));
@@ -439,20 +438,17 @@ void ARoom::MakeWalls(FastNoise* noise)
 			if(Torches.IsEmpty())
 			{
 				auto torch = GetWorld()->SpawnActor<ATorch>(TorchClass, transform);
-				torch->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+				//torch->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
 				torch->SetOwner(this);
 				Torches.Push(torch);
 			}
-			/*if (Torches.Num() < 2)
-			{
-				if (FMath::RandRange(0, 6) == 0)
-				{
-					auto torch = GetWorld()->SpawnActor<ATorch>(TorchClass, transform);
-					torch->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
-					torch->SetOwner(this);
-					Torches.Push(torch);
-				}
-			}*/
+			//if (Torches.Num() < 2)
+			//{
+			//	auto torch = GetWorld()->SpawnActor<ATorch>(TorchClass, transform);
+			//	//torch->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+			//	torch->SetOwner(this);
+			//	Torches.Push(torch);
+			//}
 		}
 		meshSectionIndex++;
 	}
