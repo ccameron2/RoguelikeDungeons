@@ -191,19 +191,18 @@ void ARoom::PlacePillars()
 
 		// Perform raycast and store hit result
 		FHitResult HitResult;
-		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_WorldStatic, TraceParams);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, TraceParams);
 
 		// If raycast hit something
 		if (bHit)
 		{
-			auto actor = HitResult.GetComponent();
-			if (actor->GetName() != "Pillar Static Mesh")
-			{
-				PillarMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
-				if (PillarMesh) { PillarMesh->AddInstance(transform); }
-			}
+
 		}
 		DrawDebugLine(GetWorld(), Start, HitResult.Location, FColor(125, 18, 255), true, -1, 0, 20);
+		
+		//if (hitActor);
+		PillarMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+		if (PillarMesh) { PillarMesh->AddInstance(transform); }
 	}
 }
 
