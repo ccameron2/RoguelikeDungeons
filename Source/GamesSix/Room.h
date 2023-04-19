@@ -76,6 +76,10 @@ public:
 		UInstancedStaticMeshComponent* BarrelMesh;
 	UPROPERTY(EditAnywhere)
 		UInstancedStaticMeshComponent* ChairMesh;
+	UPROPERTY(EditAnywhere)
+		UInstancedStaticMeshComponent* HorseMesh;
+	UPROPERTY(EditAnywhere)
+		UInstancedStaticMeshComponent* HorsePedestalMesh;
 
 	UPROPERTY(EditAnywhere)
 	TArray<ATorch*> Torches;
@@ -88,10 +92,6 @@ public:
 	UFUNCTION(CallInEditor)
 		void GenerateRandomMesh();
 
-	void MakeWalls(FastNoise* noise);
-	void GenerateMesh(FastNoise* noise);
-	void PlaceObjects();
-	void LoadMeshes();
 	enum Direction
 	{
 		North,
@@ -99,6 +99,14 @@ public:
 		South,
 		West
 	};
+
+	void MakeWalls(FastNoise* noise);
+	void GenerateMesh(FastNoise* noise);
+	void PlaceObjects();
+	void PlaceCobwebs();
+	void LoadMeshes();
+	Direction GetUnusedNSVertex(FVector& vertex);
+
 	TArray<Direction> UsedDirections;
 	void GenerateTriangles(int SizeX, int SizeY, TArray<int32>& Triangles);
 	void CalculateNormals(TArray<FVector>& normals, TArray<FVector> vertices, TArray<int32> triangles);

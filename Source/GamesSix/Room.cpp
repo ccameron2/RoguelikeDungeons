@@ -38,7 +38,7 @@ void ARoom::Destroyed()
 		}
 		Torches.Empty();
 	}
-	if(PillarMesh->GetInstanceCount() > 0) PillarMesh->ClearInstances();
+	if (PillarMesh->GetInstanceCount() > 0) PillarMesh->ClearInstances();
 	
 	if (ChestMesh->GetInstanceCount() > 0) ChestMesh->ClearInstances();
 }
@@ -207,28 +207,50 @@ void ARoom::PlacePillars()
 	}
 }
 
+void ARoom::PlaceCobwebs()
+{
+	for (int i = 0; i < 4; i++)
+	{
+		FRotator rotation = FRotator{ 0,0,0 };
+		FVector vertex = FVector{ ((-SizeX * Scale) / 2), ((-SizeY * Scale) / 2), 0 };	
+		if (i == 0) vertex += FVector{ (SizeX * Scale) - 2 * Scale,0,0 };
+		if (i == 1) vertex += FVector{ (SizeX * Scale) - 4 * Scale,(SizeY * Scale) - 4 * Scale,0 };
+		if (i == 2) vertex += FVector{ 0,(SizeY * Scale) - 4 * Scale,0 };
+		if (i == 3) vertex += FVector{ 2.0f * Scale, 0, 0 };
+		// Set location to vertex position and scale randomly
+		FTransform transform;
+		transform.SetLocation(vertex + GetActorLocation());
+		FQuat rotationQuat = rotation.Quaternion();
+		transform.SetRotation(rotationQuat);
+		CobwebMesh->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+		if (CobwebMesh) { CobwebMesh->AddInstance(transform); }
+	}
+}
+
 void ARoom::PlaceObjects()
 {
 	if(NumWalls >= 3)
 	{
-		int roomNum = FMath::RandRange(0, 1);
+		//PlaceCobwebs();
 
-		if (roomNum == 0)
+		int roomNum = FMath::RandRange(0, 6);
+		if (roomNum == 1)
 		{
-			// Room 1
+			FVector rotation = FVector{ 0,0,0 };
 			FVector vertex = FVector{ 0,0,0 };
+
+			GetUnusedNSVertex(vertex);
 
 			// Set location to vertex position and scale randomly
 			FTransform transform;
 			transform.SetLocation(vertex + GetActorLocation());
-			FQuat Rotation = FVector{ 0,0,0 }.ToOrientationQuat();
-			transform.SetRotation(Rotation);
-			//transform.SetScale3D(FVector{ float(FMath::RandRange(0.8,1.2)) });
+			FQuat rotationQuat = rotation.ToOrientationQuat();
+			transform.SetRotation(rotationQuat);
 
 			ChestMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
 			if (ChestMesh) { ChestMesh->AddInstance(transform); }
 		}
-		else if(roomNum == 1)
+		else if(roomNum == 2)
 		{
 			// Room 1
 			FVector vertex = FVector{ 0,0,0 };
@@ -242,11 +264,95 @@ void ARoom::PlaceObjects()
 			if (Campfires.IsEmpty())
 			{
 				auto campfire = GetWorld()->SpawnActor<ACampfire>(CampfireClass, transform);
-				//campfire->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
 				campfire->SetOwner(this);
 				Campfires.Push(campfire);
 			}
 		}
+		else if (roomNum == 3)
+		{
+			// Room 1
+			FVector vertex = FVector{ 0,0,0 };
+
+			auto direction = GetUnusedNSVertex(vertex);
+
+			// Set location to vertex position and scale randomly
+			FTransform transform;
+			transform.SetLocation(vertex + GetActorLocation());
+			FQuat Rotation = FVector{ 0,90,0 }.ToOrientationQuat();
+			transform.SetRotation(Rotation);
+
+			TableMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+			if (TableMesh) { TableMesh->AddInstance(transform); }
+
+			if (direction == North) transform.SetLocation(vertex + FVector{ 0,4 * float(-Scale),0 } + GetActorLocation());
+			else transform.SetLocation(vertex + FVector{ 0,4 * float(Scale),0 } + GetActorLocation());
+
+			if (direction == North) transform.SetRotation(FRotator{ 0,0,0 }.Quaternion());
+			else transform.SetRotation(FRotator{ 0,180,0 }.Quaternion());
+
+			ChairMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+			if (ChairMesh) { ChairMesh->AddInstance(transform); }
+
+		}
+		else if (roomNum == 4)
+		{
+			// Room 1
+			FVector vertex = FVector{ 0,0,0 };
+
+			auto direction = GetUnusedNSVertex(vertex);
+
+			// Set location to vertex position and scale randomly
+			FTransform transform;
+			transform.SetLocation(vertex + GetActorLocation());
+			FQuat Rotation = FVector{ 0,90,0 }.ToOrientationQuat();
+			transform.SetRotation(Rotation);
+
+			BigTableMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+			if (BigTableMesh) { BigTableMesh->AddInstance(transform); }
+
+
+			if(direction == North) transform.SetLocation(vertex + FVector{ 0,4 * float(-Scale),0 } + GetActorLocation());
+			else transform.SetLocation(vertex + FVector{ 0,4 * float(Scale),0} + GetActorLocation());
+
+			if (direction == North) transform.SetRotation(FRotator{ 0,0,0 }.Quaternion());
+			else transform.SetRotation(FRotator{ 0,180,0 }.Quaternion());
+
+			ChairMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+			if (ChairMesh) { ChairMesh->AddInstance(transform); }
+		}
+		if (roomNum == 5)
+		{
+			FVector rotation = FVector{ 0,0,0 };
+			FVector vertex = FVector{ 0,0,0 };
+
+			GetUnusedNSVertex(vertex);
+
+			// Set location to vertex position and scale randomly
+			FTransform transform;
+			transform.SetLocation(vertex + GetActorLocation());
+			FQuat rotationQuat = rotation.ToOrientationQuat();
+			transform.SetRotation(rotationQuat);
+
+			BarrelMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+			if (BarrelMesh) { BarrelMesh->AddInstance(transform); }
+		}
+		if (roomNum == 6)
+		{
+			FVector rotation = FVector{ 0,0,0 };
+			FVector vertex = FVector{ 0,0,0 };
+
+			GetUnusedNSVertex(vertex);
+
+			// Set location to vertex position and scale randomly
+			FTransform transform;
+			transform.SetLocation(vertex + GetActorLocation());
+			FQuat rotationQuat = rotation.ToOrientationQuat();
+			transform.SetRotation(rotationQuat);
+
+			HorseMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+			if (HorseMesh) { HorseMesh->AddInstance(transform); }
+		}
+
 	}
 }
 
@@ -279,6 +385,40 @@ void ARoom::LoadMeshes()
 	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset8(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Table_Small_Table_Small'"));
 	TableMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Table Small Static Mesh"));
 	TableMesh->SetStaticMesh(meshAsset8.Object);
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset9(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Horse_Statue_Pedestal'"));
+	HorsePedestalMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Horse Pedestal Static Mesh"));
+	HorsePedestalMesh->SetStaticMesh(meshAsset9.Object);
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset10(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Horse_Statue_Horse'"));
+	HorseMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Horse Static Mesh"));
+	HorseMesh->SetStaticMesh(meshAsset10.Object);
+}
+
+ARoom::Direction ARoom::GetUnusedNSVertex(FVector& vertex)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		auto direction = static_cast<Direction>(i);
+		if (!UsedDirections.Contains(direction))
+		{
+			switch (direction)
+			{
+			case North:
+				vertex = FVector{ 0,((SizeY * Scale) / 2) - 3 * Scale,0 };
+				return direction;
+				break;
+			case South:
+				vertex = FVector{ 0,((-SizeY * Scale) / 2) + 3 * Scale,0 };
+				return direction;
+				break;
+			default:
+				return direction;
+				break;
+			}
+		}
+	}
+	return static_cast<Direction>(0);
 }
 
 void ARoom::GenerateTriangles(int sizeX, int sizeY, TArray<int32>& triangles)
@@ -327,7 +467,6 @@ void ARoom::MakeWalls(FastNoise* noise)
 			TArray<FVector> vertices;
 			TArray<FVector> normals;
 			TArray<int32> triangles;
-
 			switch (direction)
 			{
 			case Direction::North:
@@ -434,21 +573,28 @@ void ARoom::MakeWalls(FastNoise* noise)
 			ProcMesh->CreateMeshSection(meshSectionIndex, vertices, triangles, normals, UVs, VertexColours, Tangents, true);
 			ProcMesh->SetMaterial(meshSectionIndex, Material);
 
-			// Place torches randomly
+			// Place torches
 			if(Torches.IsEmpty())
 			{
+				switch (direction)
+				{
+				case North:
+					transform.SetRotation(FRotator{ 0,180,0 }.Quaternion());
+					break;
+				case East:
+					transform.SetRotation(FRotator{ 0,90,0 }.Quaternion());
+					break;
+				case South:
+					transform.SetRotation(FRotator{ 0,0,0 }.Quaternion());
+					break;
+				case West:
+					transform.SetRotation(FRotator{ 0,270,0 }.Quaternion());
+					break;
+				}
 				auto torch = GetWorld()->SpawnActor<ATorch>(TorchClass, transform);
-				//torch->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
 				torch->SetOwner(this);
 				Torches.Push(torch);
 			}
-			//if (Torches.Num() < 2)
-			//{
-			//	auto torch = GetWorld()->SpawnActor<ATorch>(TorchClass, transform);
-			//	//torch->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
-			//	torch->SetOwner(this);
-			//	Torches.Push(torch);
-			//}
 		}
 		meshSectionIndex++;
 	}
