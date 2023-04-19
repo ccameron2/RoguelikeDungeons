@@ -17,6 +17,7 @@ void ARoomManager::BeginPlay()
 {
 	Super::BeginPlay();
 	MakeNewLevel();
+	SpawnEnemies(Rooms);
 }
 
 void ARoomManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -174,6 +175,24 @@ void ARoomManager::DrawDebugConnections()
 		for (auto& connection : room->Connections)
 		{
 			DrawDebugLine(GetWorld(), room->GetActorLocation(), connection->GetActorLocation(), FColor{ 255,0,255 }, true, 5.0f, 0, 10.0f);
+		}
+	}
+}
+
+void ARoomManager::SpawnEnemies(TArray<ARoom*> rooms)
+{
+	for (ARoom* room : rooms)
+	{
+		auto rand = FMath::RandRange(0, 3);
+		// 50% chance to spawn an enemy in the current room
+		if (rand > 2)
+		{
+			auto enemyClass = EnemyClasses[FMath::RandRange(0, EnemyClasses.Num() - 1)];
+			// Spawn an enemy actor at a random location within the room
+			FVector roomLocation = room->GetActorLocation();
+			FVector randomOffset = FVector(FMath::RandRange(-room->SizeX / 2, room->SizeX / 2), FMath::RandRange(-room->SizeY / 2, room->SizeY / 2), 100.0f);
+			FVector enemyLocation = roomLocation + randomOffset;
+			GetWorld()->SpawnActor<AEnemyCharacter>(enemyClass, enemyLocation, FRotator::ZeroRotator);
 		}
 	}
 }

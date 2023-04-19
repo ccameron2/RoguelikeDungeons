@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Room.h"
-
+#include "EnemyCharacter.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -31,9 +31,15 @@ public:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ARoom> RoomClass;
 
+	UPROPERTY(EditAnywhere)
+		TArray<TSubclassOf<AEnemyCharacter>> EnemyClasses;
+
 	TArray<ARoom*> Rooms;
+	TArray<AEnemyCharacter*> EnemyCharacters;
 
 	void DrawDebugConnections();
+
+	void SpawnEnemies(TArray<ARoom*> rooms);
 
 	int MaxRecursionLevel = 12;
 	void SpawnNewRooms(ARoom* node, int level, FastNoise* noise);

@@ -30,9 +30,10 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 	FirstPersonCamera->SetRelativeLocation(FVector{ 0,10,0 });
 	FirstPersonCamera->bUsePawnControlRotation = true;
 
-	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapBegin);
-	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapEnd);
-
+	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Attack Sphere"));
+	SphereComponent->SetSphereRadius(50.0f);
+	SphereComponent->SetGenerateOverlapEvents(true);
+	SphereComponent->SetupAttachment(GetMesh());
 	//Possess player 0
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
@@ -43,17 +44,9 @@ void AThirdPersonCharacter::BeginPlay()
 	Super::BeginPlay();
 	ThirdPersonCamera->SetActive(true);
 	FirstPersonCamera->SetActive(false);
-
-
-	FTransform transform;
-	FVector location;
-	location = GetActorLocation() - FVector{ -10,0,0 };
-
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), TorchClass, Torches);
-
-	//Torch = GetWorld()->SpawnActor<ATorch>(TorchClass, transform);
-	//Torch->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform, "Middle1_L");
-	//Torch->SetActorEnableCollision(false);
+	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapBegin);
+	SphereComponent->OnComponentEndOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapEnd);
+	//GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AThirdPersonCharacter::OnCompHit);
 }
 
 // Called every frame
@@ -62,50 +55,7 @@ void AThirdPersonCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if(Energy < MaxEnergy){ Energy++; }
 	if (ExpPoints >= MaxExp) { LevelUp(); }
-	
-	//if (Torches.Num() > 0)
-	//{
-	//	for (auto& torch : Torches)
-	//	{
-	//		//if (FVector::Distance(torch->GetActorLocation(), GetActorLocation()) < 2000)
-	//		//{
-	//		//	auto torchC = static_cast<ATorch*>(torch);
-	//		//	torchC->PointLight->SetVisibility(true);
-	//		//}
-	//		FHitResult HitResult;
-	//		FCollisionQueryParams CollisionParams;
-
-	//		bool bHit = GetWorld()->LineTraceSingleByChannel(
-	//			HitResult,
-	//			ThirdPersonCamera->GetComponentLocation(),
-	//			torch->GetActorLocation(),
-	//			ECC_Visibility, // channel used to check for visibility
-	//			CollisionParams
-	//		);
-
-	//		if (HitResult.GetComponent())
-	//		{
-	//			FString s = HitResult.GetComponent()->GetName();
-	//			UE_LOG(LogTemp, Display, TEXT("Component name: %s"), *s);
-	//		}
-
-	//		//DrawDebugLine(GetWorld(), ThirdPersonCamera->GetComponentLocation(), torch->GetActorLocation(), FColor{ 255,0,255 }, false, 1.0f, 0, 10.0f);
-	//		auto torchC = static_cast<ATorch*>(torch);
-	//		if (bHit)
-	//		{
-	//			auto torchSphere = dynamic_cast<USphereComponent*>(HitResult.GetComponent());
-	//			if (torchSphere == torchC->LightCollision)
-	//			{
-	//				torchC->PointLight->SetVisibility(true);
-	//			}
-	//			else
-	//			{
-	//				torchC->PointLight->SetVisibility(false);
-	//			}
-	//		}
-
-	//	}
-	//}
+	OverlappingEnemy();
 }
 
 // Called to bind functionality to input
@@ -213,6 +163,15 @@ float AThirdPersonCharacter::TakeDamage(float DamageAmount, FDamageEvent const& 
 	return 0.0f;
 }
 
+void AThirdPersonCharacter::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (OtherActor && (OtherActor != this) && OtherComp)
+	{
+		
+		//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("I Hit: %s"), *OtherActor->GetName()));
+	}
+}
+
 void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && (OtherActor != this) && OtherComp)
@@ -226,9 +185,16 @@ void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* Overlapped
 			if (resourcePickup->Type == 2) { if(Energy		 < MaxEnergy ){ Energy++; }}
 			if (resourcePickup->Type == 3) { if(ExpPoints	 < MaxExp	 ){ ExpPoints++; }}
 			if (resourcePickup->Type == 4) { if(Gold		 < MaxGold	 ){ Gold++; }}
-
+			OtherActor->Destroy();
 		}
-		OtherActor->Destroy();
+		AEnemyCharacter* enemyCharacter = Cast<AEnemyCharacter>(OtherActor);
+		if (enemyCharacter)
+		{
+			FString enemyName = enemyCharacter->GetName();
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Actor name: %s"), *enemyName));
+			IsOverlapping = true;
+			CurrOverlappedEnemy = enemyCharacter;
+		}
 	}
 }
 
@@ -236,6 +202,27 @@ void AThirdPersonCharacter::OnOverlapEnd(class UPrimitiveComponent* OverlappedCo
 {
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap End"));
+		IsOverlapping = false;
+		CurrOverlappedEnemy = nullptr;
 	}
+}
+
+void AThirdPersonCharacter::OverlappingEnemy()
+{
+	if (IsOverlapping)
+	{
+		if (IsAttacking)
+		{
+			if (OnCooldown) return;
+			FDamageEvent DamageEvent;
+			if (CurrOverlappedEnemy) CurrOverlappedEnemy->TakeDamage(10.0f, DamageEvent, GetController(), this);
+			GetWorld()->GetTimerManager().SetTimer(DamageCooldownTimer, this, &AThirdPersonCharacter::DamageCooldown, DamageCooldownTime, false);
+			OnCooldown = true;
+		}
+	}
+}
+
+void AThirdPersonCharacter::DamageCooldown()
+{
+	OnCooldown = false;
 }
