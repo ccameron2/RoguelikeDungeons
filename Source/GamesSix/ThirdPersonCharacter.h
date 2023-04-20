@@ -47,11 +47,15 @@ public:
 	void SwapCamera();
 	void ToggleSprint();
 	void EndAttack();
+	void EndSpamPrevention();
 
 	bool Walking = false;
-	float AttackTime = 1.0f;
+	float AttackTime = 0.8f;
 	FTimerHandle AttackTimer;
 	FTimerHandle DamageCooldownTimer;
+	FTimerHandle SpamPreventionTimer;
+	bool SpamPrevention = false;
+
 	UPROPERTY(EditAnywhere)
 		float DamageCooldownTime = 1.0f;
 
@@ -122,6 +126,8 @@ public:
 		void LevelUp();
 
 private:
+	UPROPERTY(VisibleAnywhere)
+		float Damage = 35.0f;
 
 	UPROPERTY(VisibleAnywhere)
 		float HealthPoints = MaxHealth;

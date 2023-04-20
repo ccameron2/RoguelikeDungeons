@@ -15,7 +15,7 @@ AEnemyCharacter::AEnemyCharacter()
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	HealthPoints = MaxHealth;
 }
 
 // Called every frame
@@ -25,7 +25,24 @@ void AEnemyCharacter::Tick(float DeltaTime)
 	if (HealthPoints <= 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Enemy Dead"));
+		Destroy();
 	}
+
+	if (Attacking)
+	{
+		if (!AttackTimerStarted)
+		{
+			GetWorld()->GetTimerManager().SetTimer(AttackTimer, this, &AEnemyCharacter::AttackComplete, 1.0f, false);
+		}
+	}
+
+	auto distance = FVector::Distance(GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+	if (distance > HealthBarDisableDistance) PlayerVisibility = false;
+	else PlayerVisibility = true;
+
+	if (distance < AttackDistance) Attacking = true;
+	else { Attacking = false; }
+
 }
 
 // Called to bind functionality to input
@@ -33,6 +50,11 @@ void AEnemyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AEnemyCharacter::AttackComplete()
+{
+	Attacking = false;
 }
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

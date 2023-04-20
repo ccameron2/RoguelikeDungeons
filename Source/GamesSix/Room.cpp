@@ -39,8 +39,6 @@ void ARoom::Destroyed()
 		Torches.Empty();
 	}
 	if (PillarMesh->GetInstanceCount() > 0) PillarMesh->ClearInstances();
-	
-	if (ChestMesh->GetInstanceCount() > 0) ChestMesh->ClearInstances();
 }
 // Called every frame
 void ARoom::Tick(float DeltaTime)
@@ -239,16 +237,21 @@ void ARoom::PlaceObjects()
 			FVector rotation = FVector{ 0,0,0 };
 			FVector vertex = FVector{ 0,0,0 };
 
-			GetUnusedNSVertex(vertex);
+			auto direction = GetUnusedNSVertex(vertex);
 
 			// Set location to vertex position and scale randomly
 			FTransform transform;
 			transform.SetLocation(vertex + GetActorLocation());
-			FQuat rotationQuat = rotation.ToOrientationQuat();
-			transform.SetRotation(rotationQuat);
 
-			ChestMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
-			if (ChestMesh) { ChestMesh->AddInstance(transform); }
+			if (direction == South) transform.SetRotation(FRotator{ 0,0,0 }.Quaternion());
+			else transform.SetRotation(FRotator{ 0,180,0 }.Quaternion());
+
+			if (Chests.IsEmpty())
+			{
+				auto chest = GetWorld()->SpawnActor<AInteractableChest>(ChestClass, transform);
+				chest->SetOwner(this);
+				Chests.Push(chest);
+			}
 		}
 		else if(roomNum == 2)
 		{
@@ -361,10 +364,6 @@ void ARoom::LoadMeshes()
 	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset1(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Column2_Column2'"));
 	PillarMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Pillar Static Mesh"));
 	PillarMesh->SetStaticMesh(meshAsset1.Object);
-
-	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset2(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Chest_Gold_Chest_Base'"));
-	ChestMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Chest Static Mesh"));
-	ChestMesh->SetStaticMesh(meshAsset2.Object);	
 
 	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset4(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Table_Big_Table_Big'"));
 	BigTableMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Table Big Static Mesh"));

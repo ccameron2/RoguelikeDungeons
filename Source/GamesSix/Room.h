@@ -6,6 +6,7 @@
 #include "KismetProceduralMeshLibrary.h"
 #include "Components/InstancedStaticMeshComponent.h" 
 #include "External/FastNoise.h"
+#include "InteractableChest.h"
 
 #include "Torch.h"
 #include "Campfire.h"
@@ -63,9 +64,10 @@ public:
 		TSubclassOf<ACampfire> CampfireClass;
 
 	UPROPERTY(EditAnywhere)
-		UInstancedStaticMeshComponent* PillarMesh;
+		TSubclassOf<AInteractableChest> ChestClass;
+
 	UPROPERTY(EditAnywhere)
-		UInstancedStaticMeshComponent* ChestMesh;
+		UInstancedStaticMeshComponent* PillarMesh;
 	UPROPERTY(EditAnywhere)
 		UInstancedStaticMeshComponent* CobwebMesh;
 	UPROPERTY(EditAnywhere)
@@ -86,6 +88,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TArray<ACampfire*> Campfires;
+
+	UPROPERTY(EditAnywhere)
+		TArray<AInteractableChest*> Chests;
 
 	TArray<ARoom*> Connections;
 

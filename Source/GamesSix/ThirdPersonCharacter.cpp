@@ -56,6 +56,7 @@ void AThirdPersonCharacter::Tick(float DeltaTime)
 	if(Energy < MaxEnergy){ Energy++; }
 	if (ExpPoints >= MaxExp) { LevelUp(); }
 	OverlappingEnemy();
+
 }
 
 // Called to bind functionality to input
@@ -111,10 +112,16 @@ void AThirdPersonCharacter::LookUp(float AxisValue)
 
 void AThirdPersonCharacter::Attack()
 {
-	if (!IsAttacking)
+	if (!SpamPrevention)
 	{
-		GetWorld()->GetTimerManager().SetTimer(AttackTimer, this, &AThirdPersonCharacter::EndAttack, AttackTime, false);
-		IsAttacking = true;
+		GetWorld()->GetTimerManager().SetTimer(SpamPreventionTimer, this, &AThirdPersonCharacter::EndSpamPrevention, 1.0f, false);
+		SpamPrevention = true;
+		
+		if (!IsAttacking)
+		{
+			IsAttacking = true;
+			GetWorld()->GetTimerManager().SetTimer(AttackTimer, this, &AThirdPersonCharacter::EndAttack, AttackTime, false);
+		}
 	}
 }
 
@@ -142,8 +149,13 @@ void AThirdPersonCharacter::ToggleSprint()
 
 void AThirdPersonCharacter::EndAttack()
 {
-	IsAttacking = false;
 	AttackTimer.Invalidate();
+	IsAttacking = false;
+}
+
+void AThirdPersonCharacter::EndSpamPrevention()
+{
+	SpamPrevention = false;
 }
 
 void AThirdPersonCharacter::LevelUp()
@@ -215,7 +227,7 @@ void AThirdPersonCharacter::OverlappingEnemy()
 		{
 			if (OnCooldown) return;
 			FDamageEvent DamageEvent;
-			if (CurrOverlappedEnemy) CurrOverlappedEnemy->TakeDamage(10.0f, DamageEvent, GetController(), this);
+			if (CurrOverlappedEnemy) CurrOverlappedEnemy->TakeDamage(Damage, DamageEvent, GetController(), this);
 			GetWorld()->GetTimerManager().SetTimer(DamageCooldownTimer, this, &AThirdPersonCharacter::DamageCooldown, DamageCooldownTime, false);
 			OnCooldown = true;
 		}

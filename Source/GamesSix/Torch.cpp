@@ -38,36 +38,5 @@ void ATorch::Tick(float DeltaTime)
 	auto distance = FVector::Distance(GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
 	if (distance > LightDisableDistance) PointLight->SetVisibility(false);
 	else PointLight->SetVisibility(true);
-
-	//FHitResult HitResult;
-	//FCollisionQueryParams CollisionParams;
-	//CollisionParams.AddIgnoredActor(this); 
-	//CollisionParams.AddIgnoredActor(GetOwner());
-	//
-	//bool bHit = GetWorld()->LineTraceSingleByChannel(
-	//	HitResult,
-	//	GetActorLocation(),
-	//	PlayerPawn->GetActorLocation(),
-	//	ECC_Visibility, // channel used to check for visibility
-	//	CollisionParams
-	//);
-
-	//if (HitResult.GetActor())
-	//{
-	//	FString s = HitResult.GetActor()->GetName();
-	//	UE_LOG(LogTemp, Display, TEXT("Actor name: %s"), *s);
-	//}
-
-	////DrawDebugLine(GetWorld(), GetActorLocation(), PlayerPawn->GetActorLocation(), FColor{ 255,0,255 }, false, 1.0f, 0, 10.0f);
-
-	//if (bHit && HitResult.GetActor() == PlayerPawn)
-	//{
-	//	PointLight->SetVisibility(true);
-	//}
-	//else
-	//{
-	//	PointLight->SetVisibility(false);
-	//}
-
 }
 

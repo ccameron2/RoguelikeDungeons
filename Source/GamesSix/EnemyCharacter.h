@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Animation/AnimMontage.h" 
+
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "EnemyCharacter.generated.h"
@@ -29,8 +31,36 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	float HealthPoints = 10.0f;
-	float MaxHealth = 10.0f;
+	UFUNCTION()
+	void AttackComplete();
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+		float HealthPoints = 100.0f;
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+		float MaxHealth = 100.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool PlayerVisibility = false;
+
+	UPROPERTY(EditAnywhere)
+		float HealthBarDisableDistance = 1000.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool PlayerInRange = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		UAnimMontage* AttackAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		UAnimMontage* DeathAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool Attacking = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float AttackDistance = 200.0f;
+
+	FTimerHandle AttackTimer;
+	bool AttackTimerStarted = false;
 };
