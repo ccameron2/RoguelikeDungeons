@@ -34,6 +34,9 @@ public:
 	UFUNCTION()
 	void AttackComplete();
 
+	UFUNCTION()
+	void DeathComplete();
+
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 		float HealthPoints = 100.0f;
 
@@ -63,4 +66,8 @@ public:
 
 	FTimerHandle AttackTimer;
 	bool AttackTimerStarted = false;
+
+	FTimerHandle DeathTimer;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	bool Dead = false;
 };

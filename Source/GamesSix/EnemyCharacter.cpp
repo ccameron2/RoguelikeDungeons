@@ -24,8 +24,10 @@ void AEnemyCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (HealthPoints <= 0)
 	{
+		if (Dead) return;
 		UE_LOG(LogTemp, Warning, TEXT("Enemy Dead"));
-		Destroy();
+		GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AEnemyCharacter::DeathComplete, 1.0f, false);
+		Dead = true;
 	}
 
 	if (Attacking)
@@ -55,6 +57,11 @@ void AEnemyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 void AEnemyCharacter::AttackComplete()
 {
 	Attacking = false;
+}
+
+void AEnemyCharacter::DeathComplete()
+{
+	Destroy();
 }
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
