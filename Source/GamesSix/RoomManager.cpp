@@ -190,7 +190,7 @@ void ARoomManager::SpawnEnemies(TArray<ARoom*> rooms)
 			auto enemyClass = EnemyClasses[FMath::RandRange(0, EnemyClasses.Num() - 1)];
 			// Spawn an enemy actor at a random location within the room
 			FVector roomLocation = room->GetActorLocation();
-			FVector randomOffset = FVector(FMath::RandRange(-room->SizeX / 2, room->SizeX / 2), FMath::RandRange(-room->SizeY / 2, room->SizeY / 2), 100.0f);
+			FVector randomOffset = FVector(FMath::RandRange((-room->SizeX / 2) * room->Scale, (room->SizeX / 2) * room->Scale), FMath::RandRange(-room->SizeY / 2, room->SizeY / 2), 100.0f);
 			FVector enemyLocation = roomLocation + randomOffset;
 			GetWorld()->SpawnActor<AEnemyCharacter>(enemyClass, enemyLocation, FRotator::ZeroRotator);
 		}

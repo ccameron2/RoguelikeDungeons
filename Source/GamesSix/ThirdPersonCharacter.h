@@ -108,12 +108,6 @@ public:
 		float GetEnergy() { return Energy; }
 
 	UFUNCTION(BlueprintCallable)
-		float GetMana() { return Mana; }
-
-	UFUNCTION(BlueprintCallable)
-		float GetGold() { return Gold; }
-
-	UFUNCTION(BlueprintCallable)
 		float GetExperience() { return ExpPoints; }
 
 	UFUNCTION(BlueprintCallable)
@@ -137,12 +131,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 		float Energy = MaxEnergy;
-
-	UPROPERTY(VisibleAnywhere)
-		float Gold = 0.0f;
-
-	UPROPERTY(VisibleAnywhere)
-		float Mana = MaxMana;
 
 	UPROPERTY(VisibleAnywhere)
 		int Level = 1;
@@ -188,5 +176,5 @@ private:
 	TArray<AActor*> Torches;
 
 	bool IsOverlapping = false;
-	AEnemyCharacter* CurrOverlappedEnemy;
+	TArray<AEnemyCharacter*> CurrOverlappedEnemies;
 };

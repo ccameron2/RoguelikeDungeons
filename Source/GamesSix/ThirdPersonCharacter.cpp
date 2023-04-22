@@ -81,7 +81,7 @@ void AThirdPersonCharacter::MoveForward(float AxisValue)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
 		if(!Walking) AddMovementInput(Direction, AxisValue);
-		else AddMovementInput(Direction, AxisValue / 4);
+		else AddMovementInput(Direction, AxisValue / 2);
 	}
 }
 
@@ -94,7 +94,7 @@ void AThirdPersonCharacter::Strafe(float AxisValue)
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		if (!Walking) AddMovementInput(Direction, AxisValue);
-		else AddMovementInput(Direction, AxisValue / 4);
+		else AddMovementInput(Direction, AxisValue / 2);
 	}
 }
 
@@ -164,8 +164,6 @@ void AThirdPersonCharacter::LevelUp()
 	ExpPoints = 0.0f; 
 	MaxExp += 5;
 	MaxHealth += 5;
-	MaxMana += 5;
-	MaxEnergy += 5;
 }
 
 float AThirdPersonCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -193,19 +191,16 @@ void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* Overlapped
 		if (resourcePickup)
 		{
 			if (resourcePickup->Type == 0) { if(HealthPoints < MaxHealth ){ HealthPoints++; }}
-			if (resourcePickup->Type == 1) { if(Mana		 < MaxMana	 ){ Mana++; }}
-			if (resourcePickup->Type == 2) { if(Energy		 < MaxEnergy ){ Energy++; }}
 			if (resourcePickup->Type == 3) { if(ExpPoints	 < MaxExp	 ){ ExpPoints++; }}
-			if (resourcePickup->Type == 4) { if(Gold		 < MaxGold	 ){ Gold++; }}
 			OtherActor->Destroy();
 		}
 		AEnemyCharacter* enemyCharacter = Cast<AEnemyCharacter>(OtherActor);
 		if (enemyCharacter)
 		{
-			FString enemyName = enemyCharacter->GetName();
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Actor name: %s"), *enemyName));
+			//FString enemyName = enemyCharacter->GetName();
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Actor name: %s"), *enemyName));
 			IsOverlapping = true;
-			CurrOverlappedEnemy = enemyCharacter;
+			CurrOverlappedEnemies.Push(enemyCharacter);
 		}
 	}
 }
@@ -215,7 +210,8 @@ void AThirdPersonCharacter::OnOverlapEnd(class UPrimitiveComponent* OverlappedCo
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		IsOverlapping = false;
-		CurrOverlappedEnemy = nullptr;
+		auto enemy = Cast<AEnemyCharacter>(OtherActor);
+		CurrOverlappedEnemies.Remove(enemy);
 	}
 }
 
@@ -227,7 +223,13 @@ void AThirdPersonCharacter::OverlappingEnemy()
 		{
 			if (OnCooldown) return;
 			FDamageEvent DamageEvent;
-			if (CurrOverlappedEnemy) CurrOverlappedEnemy->TakeDamage(Damage, DamageEvent, GetController(), this);
+			if (!CurrOverlappedEnemies.IsEmpty()) 
+			{
+				for (auto& enemy : CurrOverlappedEnemies)
+				{
+					enemy->TakeDamage(Damage, DamageEvent, GetController(), this);
+				}
+			}
 			GetWorld()->GetTimerManager().SetTimer(DamageCooldownTimer, this, &AThirdPersonCharacter::DamageCooldown, DamageCooldownTime, false);
 			OnCooldown = true;
 		}

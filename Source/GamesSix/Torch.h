@@ -35,6 +35,6 @@ public:
 	AActor* PlayerPawn;
 
 	UPROPERTY(EditAnywhere)
-		float LightDisableDistance = 3500;
+		float LightDisableDistance = 3000;
 
 };

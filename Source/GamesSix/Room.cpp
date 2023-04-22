@@ -344,16 +344,25 @@ void ARoom::PlaceObjects()
 			FVector rotation = FVector{ 0,0,0 };
 			FVector vertex = FVector{ 0,0,0 };
 
-			GetUnusedNSVertex(vertex);
+			auto direction = GetUnusedNSVertex(vertex);
 
 			// Set location to vertex position and scale randomly
 			FTransform transform;
-			transform.SetLocation(vertex + GetActorLocation());
+
+			if (direction == North) transform.SetLocation(vertex + FVector{ 0,4 * float(-Scale),0 } + GetActorLocation());
+			else transform.SetLocation(vertex + FVector{ 0,4 * float(Scale),0 } + GetActorLocation());
+
+			if (direction == North) transform.SetRotation(FRotator{ 0,0,0 }.Quaternion());
+			else transform.SetRotation(FRotator{ 0,180,0 }.Quaternion());
+
 			FQuat rotationQuat = rotation.ToOrientationQuat();
 			transform.SetRotation(rotationQuat);
-
+			transform.SetScale3D(FVector{ 0.5f,0.5f,0.5f });
 			HorseMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
 			if (HorseMesh) { HorseMesh->AddInstance(transform); }
+
+			HorsePedestalMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+			if (HorsePedestalMesh) { HorsePedestalMesh->AddInstance(transform); }
 		}
 
 	}
