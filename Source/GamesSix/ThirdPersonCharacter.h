@@ -48,7 +48,7 @@ public:
 	void ToggleSprint();
 	void EndAttack();
 	void EndSpamPrevention();
-
+	void GetGeneratedTorches();
 	bool Walking = false;
 	float AttackTime = 0.8f;
 	FTimerHandle AttackTimer;
@@ -168,12 +168,9 @@ private:
 		TSubclassOf<ATorch> TorchClass;
 
 	UPROPERTY(EditAnywhere)
-		ATorch* Torch;
-
-	UPROPERTY(EditAnywhere)
 		USphereComponent* SphereComponent;
 
-	TArray<AActor*> Torches;
+	TArray<ATorch*> Torches;
 
 	bool IsOverlapping = false;
 	TArray<AEnemyCharacter*> CurrOverlappedEnemies;

@@ -19,7 +19,6 @@ ATorch::ATorch()
 	PointLight->AttenuationRadius = 400.0f;
 	PointLight->SetupAttachment(TorchMesh);
 	PointLight->SetVisibility(false);
-
 }
 
 // Called when the game starts or when spawned

@@ -56,7 +56,6 @@ void AThirdPersonCharacter::Tick(float DeltaTime)
 	if(Energy < MaxEnergy){ Energy++; }
 	if (ExpPoints >= MaxExp) { LevelUp(); }
 	OverlappingEnemy();
-
 }
 
 // Called to bind functionality to input
@@ -158,6 +157,17 @@ void AThirdPersonCharacter::EndSpamPrevention()
 	SpamPrevention = false;
 }
 
+void AThirdPersonCharacter::GetGeneratedTorches()
+{
+	TArray<AActor*> torchActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), TorchClass, torchActors);
+
+	for (auto torch : torchActors)
+	{
+		Torches.Push(Cast<ATorch>(torch));
+	}
+}
+
 void AThirdPersonCharacter::LevelUp()
 {
 	Level++; 
@@ -176,8 +186,7 @@ float AThirdPersonCharacter::TakeDamage(float DamageAmount, FDamageEvent const& 
 void AThirdPersonCharacter::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (OtherActor && (OtherActor != this) && OtherComp)
-	{
-		
+	{		
 		//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("I Hit: %s"), *OtherActor->GetName()));
 	}
 }

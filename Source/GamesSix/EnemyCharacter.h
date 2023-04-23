@@ -46,9 +46,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		bool PlayerVisibility = false;
 
-	UPROPERTY(EditAnywhere)
-		float HealthBarDisableDistance = 1000.0f;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		bool PlayerInRange = false;
 

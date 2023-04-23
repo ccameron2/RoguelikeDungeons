@@ -4,7 +4,7 @@
 
 #include "ResourcePickup.h"
 #include "RoomManager.h"
-
+#include "ThirdPersonCharacter.h"
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "GamesSixGameModeBase.generated.h"

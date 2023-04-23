@@ -36,5 +36,4 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		float LightDisableDistance = 3000;
-
 };

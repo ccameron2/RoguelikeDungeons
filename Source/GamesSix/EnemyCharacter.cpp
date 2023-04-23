@@ -37,10 +37,31 @@ void AEnemyCharacter::Tick(float DeltaTime)
 			GetWorld()->GetTimerManager().SetTimer(AttackTimer, this, &AEnemyCharacter::AttackComplete, 1.0f, false);
 		}
 	}
+	auto playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+	auto distance = FVector::Distance(GetActorLocation(), playerPawn->GetActorLocation());
 
-	auto distance = FVector::Distance(GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
-	if (distance > HealthBarDisableDistance) PlayerVisibility = false;
-	else PlayerVisibility = true;
+	// Set up the raycast parameters
+	FVector rayStart = GetActorLocation();
+	FVector rayEnd = playerPawn->GetActorLocation();
+	const FCollisionQueryParams RayParams = FCollisionQueryParams::DefaultQueryParam;
+	
+	// Perform the raycast and get the hit result
+	FHitResult hitResult;
+	const bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult, rayStart, rayEnd, ECC_Visibility, RayParams);
+	
+	// If the raycast hit a sphere component on the torch
+	if (bHit)
+	{
+		if (hitResult.GetActor() == playerPawn)
+		{
+			PlayerVisibility = true;
+		}
+		else
+		{
+			PlayerVisibility = false;
+		}
+	}
+	
 
 	if (distance < AttackDistance) Attacking = true;
 	else { Attacking = false; }

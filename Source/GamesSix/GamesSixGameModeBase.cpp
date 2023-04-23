@@ -23,6 +23,7 @@ void AGamesSixGameModeBase::StartPlay()
 	//}
 
 	auto RoomManager = GetWorld()->SpawnActor<ARoomManager>(RoomManagerClass, FTransform{});
-
+	
+	//Cast<AThirdPersonCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn())->GetGeneratedTorches();
 
 }
