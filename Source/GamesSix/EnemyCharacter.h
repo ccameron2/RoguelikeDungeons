@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "Animation/AnimMontage.h" 
-
+#include "Components/SphereComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "EnemyCharacter.generated.h"
@@ -19,6 +18,8 @@ public:
 
 	UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	void OverlappingEnemy();
 
 protected:
 	// Called when the game starts or when spawned
@@ -37,6 +38,12 @@ public:
 	UFUNCTION()
 	void DeathComplete();
 
+	UFUNCTION()
+		void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 		float HealthPoints = 100.0f;
 
@@ -49,22 +56,30 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		bool PlayerInRange = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		UAnimMontage* AttackAnimation;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		UAnimMontage* DeathAnimation;
+	UPROPERTY(EditAnywhere)
+		USphereComponent* AttackSphere;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool Attacking = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float AttackDistance = 200.0f;
+		float AttackDamage = 10.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float AttackDistance = 150.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float KnockbackDistance = 80.0f;
+
+	AActor* CurrOverlappedEnemy = nullptr;
+	bool IsOverlapping = false;
+	bool OnCooldown = false;
 
 	FTimerHandle AttackTimer;
 	bool AttackTimerStarted = false;
 
 	FTimerHandle DeathTimer;
+
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	bool Dead = false;
 };

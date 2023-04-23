@@ -2,6 +2,7 @@
 #include "ThirdPersonCharacter.h"
 #include "GameFramework/PawnMovementComponent.h" 
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AThirdPersonCharacter::AThirdPersonCharacter()
@@ -53,9 +54,22 @@ void AThirdPersonCharacter::BeginPlay()
 void AThirdPersonCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (HealthPoints <= 0)
+	{
+		if (Dead) return;
+		GetCharacterMovement()->DisableMovement();
+		UE_LOG(LogTemp, Warning, TEXT("Player Dead"));
+		GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AThirdPersonCharacter::DeathComplete, 2.0f, false);
+		Dead = true;
+	}
+
 	if(Energy < MaxEnergy){ Energy++; }
 	if (ExpPoints >= MaxExp) { LevelUp(); }
 	OverlappingEnemy();
+
+
+
 }
 
 // Called to bind functionality to input
@@ -174,6 +188,11 @@ void AThirdPersonCharacter::LevelUp()
 	ExpPoints = 0.0f; 
 	MaxExp += 5;
 	MaxHealth += 5;
+}
+
+void AThirdPersonCharacter::DeathComplete()
+{
+	Destroy();
 }
 
 float AThirdPersonCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

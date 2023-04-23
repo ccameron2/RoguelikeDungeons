@@ -33,9 +33,11 @@ void ATorch::BeginPlay()
 void ATorch::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	auto distance = FVector::Distance(GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
-	if (distance > LightDisableDistance) PointLight->SetVisibility(false);
-	else PointLight->SetVisibility(true);
+	auto playerCharacter = GetWorld()->GetFirstPlayerController()->GetPawn();
+	if (playerCharacter)
+	{
+		auto distance = FVector::Distance(GetActorLocation(), playerCharacter->GetActorLocation());
+		if (distance > LightDisableDistance) PointLight->SetVisibility(false);
+		else PointLight->SetVisibility(true);
+	}
 }
-

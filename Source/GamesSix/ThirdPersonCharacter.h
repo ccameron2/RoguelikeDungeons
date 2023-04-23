@@ -86,6 +86,9 @@ public:
 	UPROPERTY(EditAnywhere)
 		float MaxGold = 100.0f;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool Dead = false;
+
 	UFUNCTION(BlueprintCallable)
 		float GetMaxHealth() { return MaxHealth; }
 
@@ -119,6 +122,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void LevelUp();
 
+	UFUNCTION()
+		void DeathComplete();
 private:
 	UPROPERTY(VisibleAnywhere)
 		float Damage = 35.0f;
@@ -169,6 +174,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		USphereComponent* SphereComponent;
+
+
+	FTimerHandle DeathTimer;
 
 	TArray<ATorch*> Torches;
 
