@@ -3,6 +3,8 @@
 #pragma once
 
 #include "Components/SphereComponent.h"
+#include "Sound/SoundCue.h" 
+
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "EnemyCharacter.generated.h"
@@ -70,6 +72,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float KnockbackDistance = 80.0f;
+
+	UPROPERTY(EditAnywhere)
+		USoundCue* DamageSound;
+
+	UPROPERTY(EditAnywhere)
+		USoundCue* DeathSound;
+
+	UPROPERTY(EditAnywhere)
+		USoundCue* AttackSound;
 
 	AActor* CurrOverlappedEnemy = nullptr;
 	bool IsOverlapping = false;

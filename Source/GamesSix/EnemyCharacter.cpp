@@ -3,6 +3,7 @@
 
 #include "EnemyCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
@@ -32,6 +33,8 @@ void AEnemyCharacter::Tick(float DeltaTime)
 		if (Dead) return;
 		UE_LOG(LogTemp, Warning, TEXT("Enemy Dead"));
 		GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AEnemyCharacter::DeathComplete, 1.0f, false);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation());
+
 		Dead = true;
 	}
 
@@ -141,6 +144,7 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 
 	// Move the actor away from the damage
 	SetActorLocation(pos + moveOffset,true);
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), DamageSound, GetActorLocation());
 
 	HealthPoints -= DamageAmount;
 	return 0.0f;

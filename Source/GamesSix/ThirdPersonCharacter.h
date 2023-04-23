@@ -8,6 +8,7 @@
 #include "ResourcePickup.h"
 #include "Torch.h"
 #include "EnemyCharacter.h"
+#include "Sound/SoundCue.h" 
 
 #include "Components/SphereComponent.h"
 #include "CoreMinimal.h"
@@ -175,6 +176,20 @@ private:
 	UPROPERTY(EditAnywhere)
 		USphereComponent* SphereComponent;
 
+	UPROPERTY(EditAnywhere)
+		USoundCue* DamageSound;
+
+	UPROPERTY(EditAnywhere)
+		USoundCue* DeathSound;
+
+	UPROPERTY(EditAnywhere)
+		USoundCue* AttackSound;
+
+	UPROPERTY(EditAnywhere)
+		USoundCue* LevelUpSound;
+
+	UPROPERTY(EditAnywhere)
+		USoundCue* PickupItemSound;
 
 	FTimerHandle DeathTimer;
 

@@ -61,6 +61,7 @@ void AThirdPersonCharacter::Tick(float DeltaTime)
 		GetCharacterMovement()->DisableMovement();
 		UE_LOG(LogTemp, Warning, TEXT("Player Dead"));
 		GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AThirdPersonCharacter::DeathComplete, 2.0f, false);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation());
 		Dead = true;
 	}
 
@@ -129,10 +130,11 @@ void AThirdPersonCharacter::Attack()
 	{
 		GetWorld()->GetTimerManager().SetTimer(SpamPreventionTimer, this, &AThirdPersonCharacter::EndSpamPrevention, 1.0f, false);
 		SpamPrevention = true;
-		
+
 		if (!IsAttacking)
 		{
 			IsAttacking = true;
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), AttackSound, GetActorLocation());
 			GetWorld()->GetTimerManager().SetTimer(AttackTimer, this, &AThirdPersonCharacter::EndAttack, AttackTime, false);
 		}
 	}
@@ -188,6 +190,8 @@ void AThirdPersonCharacter::LevelUp()
 	ExpPoints = 0.0f; 
 	MaxExp += 5;
 	MaxHealth += 5;
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), LevelUpSound, GetActorLocation());
+
 }
 
 void AThirdPersonCharacter::DeathComplete()
@@ -198,6 +202,7 @@ void AThirdPersonCharacter::DeathComplete()
 float AThirdPersonCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Take Damage"));
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), DamageSound, GetActorLocation());
 	HealthPoints -= DamageAmount;
 	return 0.0f;
 }
@@ -228,7 +233,7 @@ void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* Overlapped
 			//FString enemyName = enemyCharacter->GetName();
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Actor name: %s"), *enemyName));
 			IsOverlapping = true;
-			CurrOverlappedEnemies.Push(enemyCharacter);
+			if(!CurrOverlappedEnemies.Contains(enemyCharacter)) CurrOverlappedEnemies.Push(enemyCharacter);
 		}
 	}
 }
