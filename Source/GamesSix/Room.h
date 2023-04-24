@@ -7,6 +7,7 @@
 #include "Components/InstancedStaticMeshComponent.h" 
 #include "External/FastNoise.h"
 #include "InteractableChest.h"
+#include "Archway.h"
 
 #include "Torch.h"
 #include "Campfire.h"
@@ -64,6 +65,11 @@ public:
 		TSubclassOf<ACampfire> CampfireClass;
 
 	UPROPERTY(EditAnywhere)
+		TSubclassOf<AArchway> ArchwayClass;
+
+	AArchway* Archway;
+
+	UPROPERTY(EditAnywhere)
 		TSubclassOf<AInteractableChest> ChestClass;
 
 	UPROPERTY(EditAnywhere)
@@ -110,6 +116,7 @@ public:
 	void PlaceObjects();
 	void PlaceCobwebs();
 	void LoadMeshes();
+	void SpawnNextArchway();
 	Direction GetUnusedNSVertex(FVector& vertex);
 
 	TArray<Direction> UsedDirections;

@@ -93,6 +93,23 @@ void AEnemyCharacter::AttackComplete()
 
 void AEnemyCharacter::DeathComplete()
 {
+	FActorSpawnParameters spawnParams;
+	FVector location;
+	FTransform transform;
+	FVector scale = FVector(0.08, 0.08, 0.08);
+
+	for (int i = 0; i < NumResourcesDropped; i++)
+	{		
+		location.X = FMath::RandRange(0, 200);
+		location.Y = FMath::RandRange(0, 200);
+		location.Z = FMath::RandRange(0, 200);
+		transform.SetScale3D(scale);
+		transform.SetTranslation(GetActorLocation() + location);
+		AResourcePickup* ResourcePickup = GetWorld()->SpawnActorDeferred<AResourcePickup>(ResourceClass, transform);
+		ResourcePickup->Type = FMath::RandRange(0, ResourcePickup->MaterialList.Num() - 1);
+		ResourcePickup->FinishSpawning(transform);
+	}
+
 	Destroy();
 }
 

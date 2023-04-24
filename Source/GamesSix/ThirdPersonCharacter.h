@@ -9,7 +9,7 @@
 #include "Torch.h"
 #include "EnemyCharacter.h"
 #include "Sound/SoundCue.h" 
-
+#include "Archway.h"
 #include "Components/SphereComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"

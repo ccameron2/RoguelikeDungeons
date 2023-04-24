@@ -224,7 +224,7 @@ void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* Overlapped
 		if (resourcePickup)
 		{
 			if (resourcePickup->Type == 0) { if(HealthPoints < MaxHealth ){ HealthPoints++; }}
-			if (resourcePickup->Type == 3) { if(ExpPoints	 < MaxExp	 ){ ExpPoints++; }}
+			if (resourcePickup->Type == 1) { if(ExpPoints	 < MaxExp	 ){ ExpPoints++; }}
 			OtherActor->Destroy();
 		}
 		AEnemyCharacter* enemyCharacter = Cast<AEnemyCharacter>(OtherActor);
@@ -234,6 +234,14 @@ void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* Overlapped
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Actor name: %s"), *enemyName));
 			IsOverlapping = true;
 			if(!CurrOverlappedEnemies.Contains(enemyCharacter)) CurrOverlappedEnemies.Push(enemyCharacter);
+		}
+		UStaticMeshComponent* archway = Cast<UStaticMeshComponent>(OverlappedComp);
+		if (archway)
+		{
+			if (archway->GetName() == "Portal Mesh")
+			{
+				UGameplayStatics::OpenLevel(GetWorld(), FName("GameWorld"));
+			}
 		}
 	}
 }

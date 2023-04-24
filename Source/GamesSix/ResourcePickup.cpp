@@ -26,14 +26,15 @@ void AResourcePickup::BeginPlay()
 void AResourcePickup::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	FVector Location = GetActorLocation();
-	AActor* PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-	FVector PlayerLocation = PlayerPawn->GetActorLocation() + FVector{0,0,300};
-	float DistanceToTravel = FVector::Distance(PlayerLocation, Location);
-	if (DistanceToTravel < MagnetRange)
+	FVector location = GetActorLocation();
+	AActor* playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+	if (!playerPawn) return;
+	FVector playerLocation = playerPawn->GetActorLocation() + FVector{0,0,300};
+	float distanceToTravel = FVector::Distance(playerLocation, location);
+	if (distanceToTravel < MagnetRange)
 	{
-		FVector UnitDirectionVector = UKismetMathLibrary::GetDirectionUnitVector(Location, PlayerLocation);
-		ResourceMesh->AddImpulse(UnitDirectionVector * ((MagnetIntensity * DistanceToTravel) / 40));
+		FVector UnitDirectionVector = UKismetMathLibrary::GetDirectionUnitVector(location, playerLocation);
+		ResourceMesh->AddImpulse(UnitDirectionVector * ((MagnetIntensity * distanceToTravel) / 40));
 	}
 	if (!ResourceTimer.IsValid())
 	{

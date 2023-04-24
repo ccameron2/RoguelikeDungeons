@@ -18,6 +18,7 @@ void ARoomManager::BeginPlay()
 	Super::BeginPlay();
 	MakeNewLevel();
 	SpawnEnemies(Rooms);
+	FindFurthestRoom();
 }
 
 void ARoomManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -198,5 +199,23 @@ void ARoomManager::SpawnEnemies(TArray<ARoom*> rooms)
 			FVector enemyLocation = roomLocation + randomOffset;
 			GetWorld()->SpawnActor<AEnemyCharacter>(enemyClass, enemyLocation, FRotator::ZeroRotator);
 		}
+	}
+}
+
+void ARoomManager::FindFurthestRoom()
+{
+	float maxDistance = INT_MIN;
+	for (auto& room : Rooms)
+	{
+		auto distance = FVector::Distance(room->GetActorLocation(),GetActorLocation());
+		if (distance > maxDistance)
+		{
+			maxDistance = distance;
+			FurthestRoom = room;
+		}
+	}
+	if (FurthestRoom)
+	{
+		FurthestRoom->SpawnNextArchway();
 	}
 }

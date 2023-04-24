@@ -403,6 +403,43 @@ void ARoom::LoadMeshes()
 	HorseMesh->SetStaticMesh(meshAsset10.Object);
 }
 
+void ARoom::SpawnNextArchway()
+{
+	for (auto& campfire : Campfires)
+	{
+		campfire->Destroy();
+	}
+
+	for (auto& chest : Chests)
+	{
+		chest->Destroy();
+	}
+	
+	PillarMesh->ClearInstances();
+	CobwebMesh->ClearInstances();
+	TableMesh->ClearInstances();
+	BigTableMesh->ClearInstances();
+	BarrelMesh->ClearInstances();
+	ChairMesh->ClearInstances();
+	HorseMesh->ClearInstances();
+	HorsePedestalMesh->ClearInstances();
+
+	FVector vertex = FVector{ 0,0,0 };
+	auto direction = GetUnusedNSVertex(vertex);
+
+	// Set location to vertex position and scale randomly
+	FTransform transform;
+
+	transform.SetLocation(vertex + GetActorLocation());
+	
+	transform.SetRotation(FRotator{ 0,90,0 }.Quaternion());
+
+	transform.SetScale3D(FVector{ 1.0f,1.0f,1.0f });
+
+	Archway = GetWorld()->SpawnActor<AArchway>(ArchwayClass, transform);
+	Archway->SetOwner(this);
+}
+
 ARoom::Direction ARoom::GetUnusedNSVertex(FVector& vertex)
 {
 	for (int i = 0; i < 4; i++)

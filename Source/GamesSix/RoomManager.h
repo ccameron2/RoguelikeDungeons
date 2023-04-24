@@ -41,6 +41,9 @@ public:
 
 	void SpawnEnemies(TArray<ARoom*> rooms);
 
+	ARoom* FurthestRoom;
+	void FindFurthestRoom();
+
 	int MaxRecursionLevel = 12;
 	void SpawnNewRooms(ARoom* node, int level, FastNoise* noise);
 

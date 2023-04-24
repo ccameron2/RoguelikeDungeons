@@ -4,7 +4,7 @@
 
 #include "Components/SphereComponent.h"
 #include "Sound/SoundCue.h" 
-
+#include "ResourcePickup.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "EnemyCharacter.generated.h"
@@ -48,6 +48,12 @@ public:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 		float HealthPoints = 100.0f;
+
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AResourcePickup> ResourceClass;
+
+	UPROPERTY(EditAnywhere)
+		int NumResourcesDropped = 50;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 		float MaxHealth = 100.0f;
