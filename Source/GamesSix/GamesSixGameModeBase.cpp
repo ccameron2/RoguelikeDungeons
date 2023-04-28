@@ -13,11 +13,12 @@ void AGamesSixGameModeBase::StartPlay()
 {
 	Super::StartPlay();
 
-	PlayerController = Cast<AThirdPersonPlayerController>(GetWorld()->GetFirstPlayerController());
-	
-	RoomManager = GetWorld()->SpawnActor<ARoomManager>(RoomManagerClass, FTransform{});
+	// Get player controller ref
 	PlayerController = Cast<AThirdPersonPlayerController>(GetWorld()->GetFirstPlayerController());
 	PlayerPawn = PlayerController->GetPawn();
+
+	// Spawn room manager
+	RoomManager = GetWorld()->SpawnActor<ARoomManager>(RoomManagerClass, FTransform{});	
 }
 
 void AGamesSixGameModeBase::Tick(float DeltaTime)
@@ -27,8 +28,11 @@ void AGamesSixGameModeBase::Tick(float DeltaTime)
 	if (!PlayerCharacter) return;
 	if (PlayerCharacter->LevelWon)
 	{
+		// Make a new dungeon
 		RoomManager->Destroy();
 		RoomManager = GetWorld()->SpawnActor<ARoomManager>(RoomManagerClass, FTransform{});
+
+		// Put character at the start
 		PlayerCharacter->SetActorLocation(FVector{ 0,0,125 });
 		PlayerCharacter->LevelWon = false;
 	}

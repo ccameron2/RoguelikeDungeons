@@ -27,33 +27,43 @@ protected:
 
 private:
 	
+	// Dungeon manager
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ARoomManager> RoomManagerClass;
 
+	// Witch player character
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AThirdPersonCharacter> WitchClass;
 
+	// Rogue player character
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AThirdPersonCharacter> RogueClass;
 
+	// Start game
 	UFUNCTION(BlueprintCallable)
 		void StartGame();
 
+	// Player controller ref
 	UPROPERTY()
 		AThirdPersonPlayerController* PlayerController;
 
+	// Player pawn ref
 	UPROPERTY()
 		APawn* PlayerPawn;
 
+	// Player character ref
 	UPROPERTY()
 		AThirdPersonCharacter* PlayerCharacter;
 
+	// Dungeon generator object
 	UPROPERTY()
 		ARoomManager* RoomManager;
 public:
+	// Character selection bool
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool Rogue = true;
 
+	// Is game started
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool Started = false;
 

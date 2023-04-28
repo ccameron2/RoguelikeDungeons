@@ -83,7 +83,6 @@ void AThirdPersonPlayerController::CallSwapCamera()
 {
 	if (PlayerPawn)
 	{
-		PlayerPawn->SwapCamera();
 	}
 }
 

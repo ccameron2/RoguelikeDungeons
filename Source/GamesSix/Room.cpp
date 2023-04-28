@@ -31,6 +31,7 @@ void ARoom::Destroyed()
 {
 	Super::Destroyed();
 	
+	// Clear objects
 	if (!Torches.IsEmpty())
 	{
 		for (auto torch : Torches)
@@ -39,9 +40,6 @@ void ARoom::Destroyed()
 		}
 		Torches.Empty();
 	}
-	
-	if (PillarMesh->GetInstanceCount() > 0) PillarMesh->ClearInstances();
-	
 	if (!Chests.IsEmpty())
 	{
 		for (auto& chest : Chests)
@@ -49,6 +47,15 @@ void ARoom::Destroyed()
 			chest->Destroy();
 		}
 	}
+	if (!Campfires.IsEmpty())
+	{
+		for (auto& fire : Campfires)
+		{
+			fire->Destroy();
+		}
+	}
+
+	if (PillarMesh->GetInstanceCount() > 0) PillarMesh->ClearInstances();
 
 	if (Archway) Archway->Destroy();
 }
@@ -60,7 +67,7 @@ void ARoom::Tick(float DeltaTime)
 
 void ARoom::GenerateMesh(FastNoise* noise)
 {
-
+	// Clear geometry
 	Vertices.Empty();
 	Triangles.Empty();
 	Normals.Empty();
@@ -68,9 +75,6 @@ void ARoom::GenerateMesh(FastNoise* noise)
 	VertexColours.Empty();
 	Tangents.Empty();
 	ProcMesh->ClearAllMeshSections();
-
-	//SizeX = FMath::RandRange(5, 25);
-	//SizeY = FMath::RandRange(5, 25);
 
 	CreateFloor(noise);
 	CreateTop(noise);
@@ -178,6 +182,7 @@ void ARoom::PlacePillars()
 {
 	for (int i = 0; i < 4; i++)
 	{
+		// Place a pillar in each corner of the room
 		FVector vertex = FVector{((-SizeX * Scale) / 2), ((-SizeY * Scale) / 2), 0};
 		if (i == 0) vertex += FVector{ (SizeX * Scale) - Scale,0,0 };
 		if (i == 1) vertex += FVector{ (SizeX * Scale) - Scale,(SizeY * Scale) - Scale,0 };
@@ -189,7 +194,6 @@ void ARoom::PlacePillars()
 		transform.SetLocation(vertex + GetActorLocation());
 		FQuat Rotation = FVector{ 0,0,0 }.ToOrientationQuat();
 		transform.SetRotation(Rotation);
-		//transform.SetScale3D(FVector{ float(FMath::RandRange(0.8,1.2)) });
 
 		FVector Start = FVector{ transform.GetLocation().X,transform.GetLocation().Y,float(WallSizeZ * Scale)};
 		FVector End = transform.GetLocation();
@@ -213,7 +217,6 @@ void ARoom::PlacePillars()
 				if (PillarMesh) { PillarMesh->AddInstance(transform); }
 			}
 		}
-		//DrawDebugLine(GetWorld(), Start, HitResult.Location, FColor(125, 18, 255), true, -1, 0, 20);
 	}
 }
 
@@ -221,12 +224,14 @@ void ARoom::PlaceCobwebs()
 {
 	for (int i = 0; i < 4; i++)
 	{
+		// Place a cobweb in each corner of the room
 		FRotator rotation = FRotator{ 0,0,0 };
 		FVector vertex = FVector{ ((-SizeX * Scale) / 2), ((-SizeY * Scale) / 2), 0 };	
 		if (i == 0) vertex += FVector{ (SizeX * Scale) - 2 * Scale,0,0 };
 		if (i == 1) vertex += FVector{ (SizeX * Scale) - 4 * Scale,(SizeY * Scale) - 4 * Scale,0 };
 		if (i == 2) vertex += FVector{ 0,(SizeY * Scale) - 4 * Scale,0 };
 		if (i == 3) vertex += FVector{ 2.0f * Scale, 0, 0 };
+
 		// Set location to vertex position and scale randomly
 		FTransform transform;
 		transform.SetLocation(vertex + GetActorLocation());
@@ -241,11 +246,10 @@ void ARoom::PlaceObjects()
 {
 	if(NumWalls >= 3)
 	{
-		//PlaceCobwebs();
-
 		int roomNum = FMath::RandRange(0, 6);
 		if (roomNum == 1)
 		{
+			// Room 1
 			FVector rotation = FVector{ 0,0,0 };
 			FVector vertex = FVector{ 0,0,0 };
 
@@ -267,7 +271,7 @@ void ARoom::PlaceObjects()
 		}
 		else if(roomNum == 2)
 		{
-			// Room 1
+			// Room 2
 			FVector vertex = FVector{ 0,0,0 };
 
 			// Set location to vertex position and scale randomly
@@ -285,7 +289,7 @@ void ARoom::PlaceObjects()
 		}
 		else if (roomNum == 3)
 		{
-			// Room 1
+			// Room 3
 			FVector vertex = FVector{ 0,0,0 };
 
 			auto direction = GetUnusedNSVertex(vertex);
@@ -311,7 +315,7 @@ void ARoom::PlaceObjects()
 		}
 		else if (roomNum == 4)
 		{
-			// Room 1
+			// Room 4
 			FVector vertex = FVector{ 0,0,0 };
 
 			auto direction = GetUnusedNSVertex(vertex);
@@ -337,6 +341,7 @@ void ARoom::PlaceObjects()
 		}
 		if (roomNum == 5)
 		{
+			// Room 5
 			FVector rotation = FVector{ 0,0,0 };
 			FVector vertex = FVector{ 0,0,0 };
 
@@ -353,6 +358,7 @@ void ARoom::PlaceObjects()
 		}
 		if (roomNum == 6)
 		{
+			// Room 6
 			FVector rotation = FVector{ 0,0,0 };
 			FVector vertex = FVector{ 0,0,0 };
 
@@ -417,6 +423,7 @@ void ARoom::LoadMeshes()
 
 void ARoom::SpawnNextArchway()
 {
+	// Empty room of objects
 	for (auto& campfire : Campfires)
 	{
 		campfire->Destroy();
@@ -436,24 +443,21 @@ void ARoom::SpawnNextArchway()
 	HorseMesh->ClearInstances();
 	HorsePedestalMesh->ClearInstances();
 
-	FVector vertex = FVector{ 0,0,0 };
-	auto direction = GetUnusedNSVertex(vertex);
+	FVector vertex = GetActorLocation();
 
-	// Set location to vertex position and scale randomly
 	FTransform transform;
-
-	transform.SetLocation(vertex + GetActorLocation());
-	
+	transform.SetLocation(vertex);
 	transform.SetRotation(FRotator{ 0,90,0 }.Quaternion());
-
 	transform.SetScale3D(FVector{ 1.0f,1.0f,1.0f });
 
+	// Spawn archway actor
 	Archway = GetWorld()->SpawnActor<AArchway>(ArchwayClass, transform);
 	Archway->SetOwner(this);
 }
 
 ARoom::Direction ARoom::GetUnusedNSVertex(FVector& vertex)
 {
+	// Loop through used directions and return the unused one
 	for (int i = 0; i < 4; i++)
 	{
 		auto direction = static_cast<Direction>(i);
@@ -480,24 +484,24 @@ ARoom::Direction ARoom::GetUnusedNSVertex(FVector& vertex)
 
 void ARoom::GenerateTriangles(int sizeX, int sizeY, TArray<int32>& triangles)
 {
-	const int NumTriangles = 2 * (sizeX - 1) * (sizeY - 1);
-	triangles.SetNum(NumTriangles * 3);
+	const int numTriangles = 2 * (sizeX - 1) * (sizeY - 1);
+	triangles.SetNum(numTriangles * 3);
 
-	int TriangleIndex = 0;
+	int triangleIndex = 0;
 	for (int i = 0; i < sizeX - 1; i++)
 	{
 		for (int j = 0; j < sizeY - 1; j++)
 		{
-			int VertexIndex = i * sizeY + j;
+			int vertexIndex = i * sizeY + j;
 
 			// Create two triangles for each grid cell
-			triangles[TriangleIndex++] = VertexIndex;
-			triangles[TriangleIndex++] = VertexIndex + 1;
-			triangles[TriangleIndex++] = VertexIndex + sizeY;
-			
-			triangles[TriangleIndex++] = VertexIndex + sizeY;
-			triangles[TriangleIndex++] = VertexIndex + 1;
-			triangles[TriangleIndex++] = VertexIndex + sizeY + 1;
+			triangles[triangleIndex++] = vertexIndex;
+			triangles[triangleIndex++] = vertexIndex + 1;
+			triangles[triangleIndex++] = vertexIndex + sizeY;
+					  					 
+			triangles[triangleIndex++] = vertexIndex + sizeY;
+			triangles[triangleIndex++] = vertexIndex + 1;
+			triangles[triangleIndex++] = vertexIndex + sizeY + 1;
 		}
 	}
 }
@@ -514,6 +518,8 @@ void ARoom::MakeWalls(FastNoise* noise)
 {
 	FTransform transform;
 	int meshSectionIndex = 2;
+
+	// Make a wall on each unused direction
 	for (int i = 0; i < 4; i++)
 	{
 		auto direction = static_cast<Direction>(i);
@@ -624,9 +630,11 @@ void ARoom::MakeWalls(FastNoise* noise)
 				}
 			}
 
+			// Calculate normals
 			normals.Init({ 0,0,0 }, vertices.Num());
 			CalculateNormals(normals, vertices, triangles);
 
+			// Create procedural mesh
 			ProcMesh->CreateMeshSection(meshSectionIndex, vertices, triangles, normals, UVs, VertexColours, Tangents, true);
 			ProcMesh->SetMaterial(meshSectionIndex, Material);
 

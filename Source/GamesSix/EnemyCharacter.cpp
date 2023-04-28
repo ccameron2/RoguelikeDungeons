@@ -11,6 +11,7 @@ AEnemyCharacter::AEnemyCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// Create attack overlap sphere
 	AttackSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Attack Sphere"));
 	AttackSphere->SetupAttachment(RootComponent);
 }
@@ -19,7 +20,11 @@ AEnemyCharacter::AEnemyCharacter()
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	// Set health to max
 	HealthPoints = MaxHealth;
+
+	// Set dynamic delegates
 	AttackSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemyCharacter::OnOverlapBegin);
 	AttackSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemyCharacter::OnOverlapEnd);
 }
@@ -28,32 +33,33 @@ void AEnemyCharacter::BeginPlay()
 void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// If health is depleted
 	if (HealthPoints <= 0)
 	{
 		if (Dead) return;
-		UE_LOG(LogTemp, Warning, TEXT("Enemy Dead"));
+
+		// Set death timer
 		GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AEnemyCharacter::DeathComplete, 1.0f, false);
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation());
 
 		Dead = true;
 	}
-
 	
 	auto playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 	auto distance = 0.0f;
 	if (playerPawn) 
 	{
+		// Get distance to player
 		distance = FVector::Distance(GetActorLocation(), playerPawn->GetActorLocation());
 
-		// Set up the raycast parameters
+		// Raycast to player and check if blocked
 		FVector rayStart = GetActorLocation();
 		FVector rayEnd = playerPawn->GetActorLocation();
 		const FCollisionQueryParams RayParams = FCollisionQueryParams::DefaultQueryParam;
-
-		// Perform the raycast and get the hit result
 		FHitResult hitResult;
-		const bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult, rayStart, rayEnd, ECC_Visibility, RayParams);
 
+		const bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult, rayStart, rayEnd, ECC_Visibility, RayParams);
 		if (bHit)
 		{
 			if (hitResult.GetActor() == playerPawn)
@@ -65,9 +71,6 @@ void AEnemyCharacter::Tick(float DeltaTime)
 				PlayerVisibility = false;
 			}
 		}
-
-
-
 	} 
 
 	if (distance < AttackDistance) Attacking = true;
@@ -93,6 +96,7 @@ void AEnemyCharacter::AttackComplete()
 
 void AEnemyCharacter::DeathComplete()
 {
+	// Drop resources on death
 	FActorSpawnParameters spawnParams;
 	FVector location;
 	FTransform transform;
@@ -105,6 +109,8 @@ void AEnemyCharacter::DeathComplete()
 		location.Z = FMath::RandRange(0, 200);
 		transform.SetScale3D(scale);
 		transform.SetTranslation(GetActorLocation() + location);
+
+		// Spawn resource and set type
 		AResourcePickup* ResourcePickup = GetWorld()->SpawnActorDeferred<AResourcePickup>(ResourceClass, transform);
 		ResourcePickup->Type = FMath::RandRange(0, ResourcePickup->MaterialList.Num() - 1);
 		ResourcePickup->FinishSpawning(transform);
@@ -122,6 +128,8 @@ void AEnemyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 			FString enemyName = OtherActor->GetName();
 			auto playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 			FString playerName;
+
+			// If overlapped actor is player
 			if(playerPawn) playerName = playerPawn->GetName();
 			if (enemyName == playerName)
 			{
@@ -137,7 +145,6 @@ void AEnemyCharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* 
 {
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
-		//Attacking = false;
 		IsOverlapping = false;
 		CurrOverlappedEnemy = nullptr;
 	}
@@ -147,39 +154,41 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 {
 	UE_LOG(LogTemp, Warning, TEXT("Take Damage"));
 
+	// Get positions
 	auto damageCauserPos = DamageCauser->GetActorLocation();
 	auto pos = GetActorLocation();
-	// Subtract the damage-causer's position from the damage position to get the relative position
-	FVector relativePos = pos - damageCauserPos;
 
-	// Normalize the relative position vector to get the direction vector
+	// Find direction and calculate move offset
+	FVector relativePos = pos - damageCauserPos;
 	float length = relativePos.Length();
 	FVector direction = { relativePos / length };
-
-	// Scale the direction vector by the distance
 	FVector moveOffset = { direction.X * KnockbackDistance,direction.Y * KnockbackDistance,0.0f };
 
-	// Move the actor away from the damage
+	// Move the enemy away from the damage
 	SetActorLocation(pos + moveOffset,true);
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), DamageSound, GetActorLocation());
 
 	HealthPoints -= DamageAmount;
+
 	return 0.0f;
 }
 
 void AEnemyCharacter::OverlappingEnemy()
 {
+	// Deal damage if enemy is overlapping and attacking
 	if (IsOverlapping)
 	{
 		if (Attacking)
 		{
 			if (OnCooldown) return;
+
 			FDamageEvent DamageEvent;
 			if (CurrOverlappedEnemy)
 			{
-				CurrOverlappedEnemy->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
-				
+				CurrOverlappedEnemy->TakeDamage(AttackDamage, DamageEvent, GetController(), this);			
 			}
+
+			// Start attack cooldown
 			if (!AttackTimerStarted)
 			{
 				GetWorld()->GetTimerManager().SetTimer(AttackTimer, this, &AEnemyCharacter::AttackComplete, 1.0f, false);

@@ -29,9 +29,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// Interact sphere
 	UPROPERTY(EditAnywhere)
 		USphereComponent* SphereCollision;
 
+	// Chest meshes
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* ClosedTopMesh;
 
@@ -41,6 +43,7 @@ public:
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* BottomMesh;
 
+	// Pickup meshes
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* AttackMesh;
 
@@ -53,12 +56,18 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* ActiveMesh;
 
+	// Time pickup remains in world
 	UPROPERTY(EditAnywhere)
 		float PickupLifetime = 2.0f;
 
+	UPROPERTY(EditAnywhere)
+		AThirdPersonCharacter* PlayerCharacter;
+
+	// Clear the pickup after time is up
 	UFUNCTION()
 		void ClearPickup();
 
+	// Lifetime timer
 	FTimerHandle TimerHandle;
 
 	bool PickedUp = false;

@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "RoomManager.h"
 #include "External/delaunator.hpp"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 typedef ARoom::Direction Direction;
@@ -16,6 +17,7 @@ ARoomManager::ARoomManager()
 void ARoomManager::BeginPlay()
 {
 	Super::BeginPlay();
+
 	MakeNewLevel();
 	SpawnEnemies(Rooms);
 	FindFurthestRoom();
@@ -35,7 +37,6 @@ void ARoomManager::OnConstruction(const FTransform& Transform)
 // Called every frame
 void ARoomManager::Tick(float DeltaTime)
 {
-
 	Super::Tick(DeltaTime);
 
 }
@@ -51,18 +52,26 @@ void ARoomManager::Destroyed()
 		}
 		Rooms.Empty();
 	}
+
+	TArray<AActor*> outActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(),AEnemyCharacter::StaticClass(), outActors);
+	for (auto& actor : outActors)
+	{
+		actor->Destroy();
+	}
+
 }
 
 void ARoomManager::SpawnNewRooms(ARoom* node, int level, FastNoise* noise)
 {
+	// Roll random number of rooms to spawn
 	int numRooms = FMath::RandRange(1, 3);
-
-	//if(numRooms == 3 || numRooms == 2) numRooms = FMath::RandRange(1, 3);
 
 	for (int i = 0; i < numRooms; i++)
 	{
 		FTransform transform;
 
+		// Roll a new direction
 		Direction direction = static_cast<Direction>(FMath::RandRange(0, 3));
 		while (node->UsedDirections.Contains(direction))
 		{
@@ -70,6 +79,7 @@ void ARoomManager::SpawnNewRooms(ARoom* node, int level, FastNoise* noise)
 		}
 		FVector location;
 
+		// Adjust location of new room to spawn
 		switch (direction)
 		{
 		case Direction::North:
@@ -88,6 +98,7 @@ void ARoomManager::SpawnNewRooms(ARoom* node, int level, FastNoise* noise)
 			break;
 		}
 
+		// Raycast to check if a room has already been spawned
 		FHitResult Hit;
 		FVector Start = location + FVector{0,0,float(node->Scale * node->WallSizeZ)};
 		FVector End = location - FVector{ 0,0,float(node->Scale * node->WallSizeZ)};
@@ -95,19 +106,19 @@ void ARoomManager::SpawnNewRooms(ARoom* node, int level, FastNoise* noise)
 		FCollisionQueryParams Params;
 		GetWorld()->LineTraceSingleByChannel(Hit, Start, End, Channel, Params);
 
-		//DrawDebugLine(GetWorld(), Start, End, Hit.bBlockingHit ? FColor::Red : FColor::Blue, true, 5.0f, 0, 10.0f);
-
 		auto hitActor = Cast<ARoom>(Hit.GetActor());
 		if (!hitActor)
 		{
 			node->UsedDirections.Push(direction);
-
 			transform.SetLocation(location);
+
+			// Spawn a new room and generate mesh
 			ARoom* room = GetWorld()->SpawnActor<ARoom>(RoomClass, transform);
 			node->Connections.Push(room);
 			Rooms.Push(room);
 			room->GenerateMesh(noise);
 
+			// Push used direction onto old room
 			auto nodeDirection = Direction::North;
 			if (direction == Direction::North) nodeDirection = Direction::South;
 			if (direction == Direction::East) nodeDirection = Direction::West;
@@ -117,6 +128,7 @@ void ARoomManager::SpawnNewRooms(ARoom* node, int level, FastNoise* noise)
 		}		
 	}
 
+	// Recursively place rooms
 	if (level < MaxRecursionLevel)
 	{
 		for (auto& subnode : node->Connections)
@@ -148,12 +160,13 @@ void ARoomManager::MakeNewLevel()
 	auto location = FVector{ 0,0,0 };
 	transform.SetLocation(location);
 
+	// Spawn root room
 	ARoom* root = GetWorld()->SpawnActor<ARoom>(RoomClass, transform);
 	root->GenerateMesh(&noise);
 	Rooms.Push(root);
 
+	// Recursively generate rooms
 	SpawnNewRooms(root,0,&noise);
-	//DrawDebugConnections();
 	MakeWalls(&noise);
 }
 
@@ -185,10 +198,12 @@ void ARoomManager::SpawnEnemies(TArray<ARoom*> rooms)
 	for (ARoom* room : rooms)
 	{
 		auto rand = FMath::RandRange(0, 3);
+
 		// 50% chance to spawn an enemy in the current room
 		if (rand > 2)
 		{
 			auto enemyClass = EnemyClasses[FMath::RandRange(0, EnemyClasses.Num() - 1)];
+
 			// Spawn an enemy actor at a random location within the room
 			FVector roomLocation = room->GetActorLocation();
 			auto minX = ((-room->SizeX / 2) * room->Scale) + (2 * room->Scale);

@@ -59,19 +59,22 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		int NumWalls = 0;
 
+	// Actor classes to spawn
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ATorch> TorchClass;
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ACampfire> CampfireClass;
-
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AArchway> ArchwayClass;
 
+	// Archway actor
 	AArchway* Archway;
 
+	// Chest actors
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AInteractableChest> ChestClass;
 
+	// Room object meshes
 	UPROPERTY(EditAnywhere)
 		UInstancedStaticMeshComponent* PillarMesh;
 	UPROPERTY(EditAnywhere)
@@ -89,12 +92,15 @@ public:
 	UPROPERTY(EditAnywhere)
 		UInstancedStaticMeshComponent* HorsePedestalMesh;
 
+	// Torch actors
 	UPROPERTY(EditAnywhere)
-	TArray<ATorch*> Torches;
+		TArray<ATorch*> Torches;
 
+	// Fire actors
 	UPROPERTY(EditAnywhere)
-	TArray<ACampfire*> Campfires;
+		TArray<ACampfire*> Campfires;
 
+	// Chest actors
 	UPROPERTY(EditAnywhere)
 		TArray<AInteractableChest*> Chests;
 
@@ -111,24 +117,44 @@ public:
 		West
 	};
 
+	// Generate room and walls
 	void MakeWalls(FastNoise* noise);
 	void GenerateMesh(FastNoise* noise);
+
 	void PlaceObjects();
 	void PlaceCobwebs();
-	void LoadMeshes();
-	void SpawnNextArchway();
-	Direction GetUnusedNSVertex(FVector& vertex);
 
-	TArray<Direction> UsedDirections;
+	// Load meshes
+	void LoadMeshes();
+
+	// Spawn archway in final room
+	void SpawnNextArchway();
+
+	// Geometry functions
 	void GenerateTriangles(int SizeX, int SizeY, TArray<int32>& Triangles);
 	void CalculateNormals(TArray<FVector>& normals, TArray<FVector> vertices, TArray<int32> triangles);
+
+	// Get the vertex on the side of the room that doesnt have a wall
+	Direction GetUnusedNSVertex(FVector& vertex);
+
+	// Array of directions that have walls
+	TArray<Direction> UsedDirections;
+
 private:
+	// Create floor and top
 	void CreateFloor(FastNoise* noise);
 	void CreateTop(FastNoise* noise);
+	
+	// Place static mesh pillars on corners
 	void PlacePillars();
+
+	// Has mesh been generated
 	bool MeshGenerated = false;
+
+	// Height of the walls
 	int WallHeight = 11;
 
+	// Room geometry
 	TArray<FVector> Vertices;
 	TArray<int32> Triangles;
 	TArray<FVector> Normals;
@@ -136,10 +162,12 @@ private:
 	TArray<FColor> VertexColours;
 	TArray<FProcMeshTangent> Tangents;
 
+	// Roof geometry
 	TArray<FVector> TopVertices;
 	TArray<int32> TopTriangles;
 	TArray<FVector> TopNormals;
 
+	// Wall geometry
 	TArray<FVector> WallVertices;
 	TArray<int32> WallTriangles;
 	TArray<FVector> WallNormals;

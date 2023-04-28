@@ -24,12 +24,12 @@ AInteractableChest::AInteractableChest()
 	ClosedTopMesh->SetStaticMesh(meshAsset3.Object);
 	ClosedTopMesh->SetupAttachment(BottomMesh);
 
-	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset4(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/RPGItems/Sword'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset4(TEXT("StaticMesh'/Game/Models/RPGItems/Sword'"));
 	AttackMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Attack Mesh"));
 	AttackMesh->SetStaticMesh(meshAsset4.Object);
 	AttackMesh->SetupAttachment(BottomMesh);
 
-	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset5(TEXT("StaticMesh'/Game/Models/LowPolyDungeon/Chest_Chest_Top'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> meshAsset5(TEXT("StaticMesh'/Game/Models/RPGItems/Crystal3'"));
 	LevelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Level Mesh"));
 	LevelMesh->SetStaticMesh(meshAsset5.Object);
 	LevelMesh->SetupAttachment(BottomMesh);
@@ -50,7 +50,11 @@ AInteractableChest::AInteractableChest()
 void AInteractableChest::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Collision delegate
 	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AInteractableChest::OnOverlapBegin);
+	
+	// Make pickup meshes invisible
 	HealthMesh->SetVisibility(false);
 	AttackMesh->SetVisibility(false);
 	LevelMesh->SetVisibility(false);
@@ -60,13 +64,11 @@ void AInteractableChest::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 {
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
-		AThirdPersonCharacter* character = Cast<AThirdPersonCharacter>(OtherActor);
-		if (character)
+		PlayerCharacter = Cast<AThirdPersonCharacter>(OtherActor);
+		if (PlayerCharacter)
 		{
-			if (character->IsAttacking)
+			if (PlayerCharacter->IsAttacking)
 			{
-				FString enemyName = character->GetName();
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Actor name: %s"), *enemyName));
 				IsOpen = true;
 			}			
 		}
@@ -80,30 +82,40 @@ void AInteractableChest::Tick(float DeltaTime)
 
 	if (IsOpen)
 	{
+		// Open chest
 		ClosedTopMesh->SetVisibility(false);
 		OpenTopMesh->SetVisibility(true);
 
 		if (!PickedUp)
 		{
-			auto rand = FMath::RandRange(0, 2);
-			switch (rand)
+			PlayerCharacter = Cast<AThirdPersonCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+
+			// Spawn random pickup and apply effect
+			auto random = FMath::RandRange(0, 2);
+			switch (random)
 			{
 			case 0:
 				HealthMesh->SetVisibility(true);
 				ActiveMesh = HealthMesh;
+				PlayerCharacter->HealthPoints = PlayerCharacter->MaxHealth;
 				break;
 			case 1:
 				AttackMesh->SetVisibility(true);
 				ActiveMesh = AttackMesh;
+				PlayerCharacter->Damage += 5.0f;
 				break;
 			case 2:
-				LevelMesh->SetVisibility(false);
+				LevelMesh->SetVisibility(true);
 				ActiveMesh = LevelMesh;
+				PlayerCharacter->LevelUp();
 				break;
 			default:
 				break;
 			}
+			
+			// Start pickup lifetime timer
 			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AInteractableChest::ClearPickup, PickupLifetime, false);
+			PickedUp = true;
 		}
 	}
 }

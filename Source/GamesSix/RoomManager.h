@@ -28,29 +28,38 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// Room class to spawn
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ARoom> RoomClass;
-
+	
+	// Enemy class to spawn
 	UPROPERTY(EditAnywhere)
 		TArray<TSubclassOf<AEnemyCharacter>> EnemyClasses;
 
+	// Array of rooms and characters
 	TArray<ARoom*> Rooms;
 	TArray<AEnemyCharacter*> EnemyCharacters;
 
+	// Draw debug connections between rooms to show generation
 	void DrawDebugConnections();
 
+	// Spawn enemies in rooms
 	void SpawnEnemies(TArray<ARoom*> rooms);
 
+	// Find and save furthest room
 	ARoom* FurthestRoom;
 	void FindFurthestRoom();
 
+	// Max recursions to use when placing rooms
 	int MaxRecursionLevel = 12;
+
+	// Place new rooms in the world
 	void SpawnNewRooms(ARoom* node, int level, FastNoise* noise);
 
 	UFUNCTION(CallInEditor)
 	void MakeNewLevel();
 
+	// Call make walls on all rooms
 	void MakeWalls(FastNoise* noise);
-
 
 };

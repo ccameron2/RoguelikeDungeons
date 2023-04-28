@@ -39,12 +39,14 @@ void AArchway::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class A
 {
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
+		// If overlapped actor is player
 		FString enemyName = OtherActor->GetName();
 		auto playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 		FString playerName;
 		if (playerPawn) playerName = playerPawn->GetName();
 		if (enemyName == playerName)
 		{
+			// Set level as won
 			auto playerChar = Cast<AThirdPersonCharacter>(playerPawn);
 			playerChar->LevelWon = true;
 		}

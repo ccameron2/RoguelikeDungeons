@@ -24,12 +24,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// Point light
 	UPROPERTY(EditAnywhere)
 		UPointLightComponent* PointLight;
 
+	// Static Mesh
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* CampfireMesh;
 
+	// Distance from player to disable the light
 	UPROPERTY(EditAnywhere)
 		float LightDisableDistance = 3500;
 };

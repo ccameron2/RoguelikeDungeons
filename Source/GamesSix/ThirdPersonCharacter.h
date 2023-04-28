@@ -46,14 +46,18 @@ public:
 	void Jump();
 	void SwapCamera();
 	void ToggleSprint();
+
 	void EndAttack();
 	void EndSpamPrevention();
 	void GetGeneratedTorches();
+
 	bool Walking = false;
 	float AttackTime = 0.8f;
+
 	FTimerHandle AttackTimer;
 	FTimerHandle DamageCooldownTimer;
 	FTimerHandle SpamPreventionTimer;
+
 	bool SpamPrevention = false;
 
 	UPROPERTY(EditAnywhere)
@@ -120,6 +124,9 @@ public:
 		float GetPlayerLevel() { return Level; }
 
 	UFUNCTION(BlueprintCallable)
+		float GetPlayerDamage() { return Damage; }
+
+	UFUNCTION(BlueprintCallable)
 		void LevelUp();
 
 	UFUNCTION()
@@ -128,21 +135,20 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		bool LevelWon = false;
 
-private:
-	UPROPERTY(VisibleAnywhere)
-		float Damage = 35.0f;
-
 	UPROPERTY(VisibleAnywhere)
 		float HealthPoints = MaxHealth;
+
+	UPROPERTY(VisibleAnywhere)
+		float Damage = 35.0f;
+private:
+	UPROPERTY(VisibleAnywhere)
+		int Level = 1;
 
 	UPROPERTY(VisibleAnywhere)
 		float ExpPoints = 0.0f;
 
 	UPROPERTY(VisibleAnywhere)
 		float Energy = MaxEnergy;
-
-	UPROPERTY(VisibleAnywhere)
-		int Level = 1;
 
 	UPROPERTY(VisibleAnywhere)
 		int Lives = 1;
@@ -179,18 +185,15 @@ private:
 	UPROPERTY(EditAnywhere)
 		USphereComponent* SphereComponent;
 
+	// Unused sounds
 	UPROPERTY(EditAnywhere)
 		USoundCue* DamageSound;
-
 	UPROPERTY(EditAnywhere)
 		USoundCue* DeathSound;
-
 	UPROPERTY(EditAnywhere)
 		USoundCue* AttackSound;
-
 	UPROPERTY(EditAnywhere)
 		USoundCue* LevelUpSound;
-
 	UPROPERTY(EditAnywhere)
 		USoundCue* PickupItemSound;
 

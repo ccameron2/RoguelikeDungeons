@@ -29,13 +29,18 @@ void AResourcePickup::Tick(float DeltaTime)
 	FVector location = GetActorLocation();
 	AActor* playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 	if (!playerPawn) return;
+
+	// Check distance from player
 	FVector playerLocation = playerPawn->GetActorLocation() + FVector{0,0,300};
 	float distanceToTravel = FVector::Distance(playerLocation, location);
 	if (distanceToTravel < MagnetRange)
 	{
+		// Attract to player
 		FVector UnitDirectionVector = UKismetMathLibrary::GetDirectionUnitVector(location, playerLocation);
 		ResourceMesh->AddImpulse(UnitDirectionVector * ((MagnetIntensity * distanceToTravel) / 40));
 	}
+
+	// Snap to player after timer
 	if (!ResourceTimer.IsValid())
 	{
 		auto newLoc = FMath::VInterpTo(GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation(), DeltaTime, 5.0f);

@@ -35,6 +35,7 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 	SphereComponent->SetSphereRadius(50.0f);
 	SphereComponent->SetGenerateOverlapEvents(true);
 	SphereComponent->SetupAttachment(GetMesh());
+
 	//Possess player 0
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
@@ -47,7 +48,6 @@ void AThirdPersonCharacter::BeginPlay()
 	FirstPersonCamera->SetActive(false);
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapBegin);
 	SphereComponent->OnComponentEndOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapEnd);
-	//GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AThirdPersonCharacter::OnCompHit);
 }
 
 // Called every frame
@@ -55,22 +55,25 @@ void AThirdPersonCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// If health depleted
 	if (HealthPoints <= 0)
 	{
 		if (Dead) return;
 		GetCharacterMovement()->DisableMovement();
-		UE_LOG(LogTemp, Warning, TEXT("Player Dead"));
+
+		// Start death timer
 		GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AThirdPersonCharacter::DeathComplete, 2.0f, false);
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation());
 		Dead = true;
 	}
 
+	// Regenerate energy for jump
 	if(Energy < MaxEnergy){ Energy++; }
+	
+	// Track XP for level up
 	if (ExpPoints >= MaxExp) { LevelUp(); }
+
 	OverlappingEnemy();
-
-
-
 }
 
 // Called to bind functionality to input
@@ -128,11 +131,13 @@ void AThirdPersonCharacter::Attack()
 {
 	if (!SpamPrevention)
 	{
+		// Start timer to prevent spamming attack
 		GetWorld()->GetTimerManager().SetTimer(SpamPreventionTimer, this, &AThirdPersonCharacter::EndSpamPrevention, 1.0f, false);
 		SpamPrevention = true;
 
 		if (!IsAttacking)
 		{
+			// Set character to attacking and start cooldown timer
 			IsAttacking = true;
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), AttackSound, GetActorLocation());
 			GetWorld()->GetTimerManager().SetTimer(AttackTimer, this, &AThirdPersonCharacter::EndAttack, AttackTime, false);
@@ -186,17 +191,20 @@ void AThirdPersonCharacter::GetGeneratedTorches()
 
 void AThirdPersonCharacter::LevelUp()
 {
+	// Increase stats on level up
 	Level++; 
 	ExpPoints = 0.0f; 
 	MaxExp += 5;
 	MaxHealth += 5;
+	Damage += 5;
+	LevelWon = false;
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), LevelUpSound, GetActorLocation());
-
 }
 
 void AThirdPersonCharacter::DeathComplete()
 {
 	Destroy();
+	UGameplayStatics::OpenLevel(GetWorld(), FName("TitleScreen"));
 }
 
 float AThirdPersonCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -211,7 +219,7 @@ void AThirdPersonCharacter::OnCompHit(UPrimitiveComponent* HitComp, AActor* Othe
 {
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{		
-		//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("I Hit: %s"), *OtherActor->GetName()));
+
 	}
 }
 
@@ -219,7 +227,6 @@ void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* Overlapped
 {
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap Begin"));
 		AResourcePickup* resourcePickup = Cast<AResourcePickup>(OtherActor);
 		if (resourcePickup)
 		{
@@ -230,8 +237,6 @@ void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* Overlapped
 		AEnemyCharacter* enemyCharacter = Cast<AEnemyCharacter>(OtherActor);
 		if (enemyCharacter)
 		{
-			//FString enemyName = enemyCharacter->GetName();
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Actor name: %s"), *enemyName));
 			IsOverlapping = true;
 			if(!CurrOverlappedEnemies.Contains(enemyCharacter)) CurrOverlappedEnemies.Push(enemyCharacter);
 		}
