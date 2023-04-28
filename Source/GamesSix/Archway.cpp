@@ -45,7 +45,8 @@ void AArchway::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class A
 		if (playerPawn) playerName = playerPawn->GetName();
 		if (enemyName == playerName)
 		{
-			UGameplayStatics::OpenLevel(GetWorld(), FName("GameWorld"));
+			auto playerChar = Cast<AThirdPersonCharacter>(playerPawn);
+			playerChar->LevelWon = true;
 		}
 	}
 }

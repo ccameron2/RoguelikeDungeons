@@ -2,6 +2,7 @@
 
 #pragma once
 #include "Components/SphereComponent.h"
+#include "ThirdPersonCharacter.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"

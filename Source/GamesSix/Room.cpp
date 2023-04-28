@@ -30,6 +30,7 @@ void ARoom::OnConstruction(const FTransform& Transform)
 void ARoom::Destroyed()
 {
 	Super::Destroyed();
+	
 	if (!Torches.IsEmpty())
 	{
 		for (auto torch : Torches)
@@ -38,7 +39,18 @@ void ARoom::Destroyed()
 		}
 		Torches.Empty();
 	}
+	
 	if (PillarMesh->GetInstanceCount() > 0) PillarMesh->ClearInstances();
+	
+	if (!Chests.IsEmpty())
+	{
+		for (auto& chest : Chests)
+		{
+			chest->Destroy();
+		}
+	}
+
+	if (Archway) Archway->Destroy();
 }
 // Called every frame
 void ARoom::Tick(float DeltaTime)

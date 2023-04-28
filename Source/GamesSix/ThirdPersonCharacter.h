@@ -9,7 +9,6 @@
 #include "Torch.h"
 #include "EnemyCharacter.h"
 #include "Sound/SoundCue.h" 
-#include "Archway.h"
 #include "Components/SphereComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
@@ -125,6 +124,10 @@ public:
 
 	UFUNCTION()
 		void DeathComplete();
+
+	UPROPERTY(VisibleAnywhere)
+		bool LevelWon = false;
+
 private:
 	UPROPERTY(VisibleAnywhere)
 		float Damage = 35.0f;

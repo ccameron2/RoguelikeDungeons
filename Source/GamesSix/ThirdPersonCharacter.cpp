@@ -235,14 +235,6 @@ void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* Overlapped
 			IsOverlapping = true;
 			if(!CurrOverlappedEnemies.Contains(enemyCharacter)) CurrOverlappedEnemies.Push(enemyCharacter);
 		}
-		UStaticMeshComponent* archway = Cast<UStaticMeshComponent>(OverlappedComp);
-		if (archway)
-		{
-			if (archway->GetName() == "Portal Mesh")
-			{
-				UGameplayStatics::OpenLevel(GetWorld(), FName("GameWorld"));
-			}
-		}
 	}
 }
 

@@ -6,8 +6,9 @@
 void AThirdPersonPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	//Get pawn reference
-	PlayerPawn = Cast<AThirdPersonCharacter>(GetPawn());
+
+	// Get pawn reference
+	BindCharacter();
 }
 
 void AThirdPersonPlayerController::SetupInputComponent()
@@ -16,7 +17,7 @@ void AThirdPersonPlayerController::SetupInputComponent()
 
 	check(InputComponent);
 
-	//Bind inputs to assigned functions
+	// Bind inputs to assigned functions
 	InputComponent->BindAxis("Move Forwards", this, &AThirdPersonPlayerController::CallForward);
 	InputComponent->BindAxis("Turn", this, &AThirdPersonPlayerController::CallTurn);
 	InputComponent->BindAction("Fire", EInputEvent::IE_Pressed, this, &AThirdPersonPlayerController::CallAttack);
@@ -93,3 +94,10 @@ void AThirdPersonPlayerController::CallToggleSprint()
 		PlayerPawn->ToggleSprint();
 	}
 }
+
+void AThirdPersonPlayerController::BindCharacter()
+{
+	PlayerPawn = nullptr;
+	PlayerPawn = Cast<AThirdPersonCharacter>(GetPawn());
+}
+

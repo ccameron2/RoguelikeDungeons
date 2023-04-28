@@ -27,6 +27,7 @@ public:
 	UPROPERTY()
 		class AThirdPersonCharacter* PlayerPawn;
 
+	void BindCharacter();
 private:
 
 	virtual void CallForward(float Value);
