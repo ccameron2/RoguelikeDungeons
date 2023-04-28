@@ -41,5 +41,26 @@ public:
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* BottomMesh;
 
-	bool isOpen = false;
+	UPROPERTY(EditAnywhere)
+		UStaticMeshComponent* AttackMesh;
+
+	UPROPERTY(EditAnywhere)
+		UStaticMeshComponent* LevelMesh;
+
+	UPROPERTY(EditAnywhere)
+		UStaticMeshComponent* HealthMesh;
+
+	UPROPERTY(VisibleAnywhere)
+		UStaticMeshComponent* ActiveMesh;
+
+	UPROPERTY(EditAnywhere)
+		float PickupLifetime = 2.0f;
+
+	UFUNCTION()
+		void ClearPickup();
+
+	FTimerHandle TimerHandle;
+
+	bool PickedUp = false;
+	bool IsOpen = false;
 };
